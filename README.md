@@ -792,6 +792,18 @@ The extension (`extension/`) injects into every `linkedin.com` page and provides
 - **Tracker tab** — log sent messages, schedule follow-ups, mark replies
 - **Posts tab** — capture visible LinkedIn posts and save them to the dashboard for repurposing
 
+### Using the extension with a self-hosted instance
+
+The published extension talks to `https://outreachai.in`. To use your own deployment, replace that origin across the extension and load it unpacked:
+
+```bash
+cd extension
+# macOS sed shown; on Linux use: sed -i 's#...#...#g'
+grep -rl 'https://outreachai.in' . | xargs sed -i '' 's#https://outreachai.in#https://your-domain.com#g'
+```
+
+Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the `extension/` folder. The `host_permissions` entry in `manifest.json` is updated by the same command.
+
 ### Connecting the extension to the dashboard
 
 1. Click the extension icon in your Chrome toolbar

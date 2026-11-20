@@ -14,6 +14,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+
+// Google Analytics is opt-in: set NEXT_PUBLIC_GA_ID to enable it.
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID
 export const metadata: Metadata = {
   title: { default: 'OutreachAI — Free Lemlist & HubSpot Alternative', template: '%s | OutreachAI' },
   description: 'AI-powered outreach sequences, CRM pipeline, workflow automation and LinkedIn automation — all in one free platform. The Lemlist + HubSpot alternative.',
@@ -85,8 +88,12 @@ export default function RootLayout({
         })}} />
       </head>
       <body className="min-h-full flex flex-col">
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-4JZ20L4ZBZ" strategy="afterInteractive" />
-        <Script id="ga-init" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-4JZ20L4ZBZ');`}</Script>
+        {GA_ID && (
+          <>
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+            <Script id="ga-init" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',${JSON.stringify(GA_ID)});`}</Script>
+          </>
+        )}
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

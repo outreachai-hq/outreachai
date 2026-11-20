@@ -80,7 +80,7 @@ function htmlPage(title: string, message: string, success: boolean): string {
     <div class="icon">${icon}</div>
     <h1>${title}</h1>
     <p>${message}</p>
-    <a href="https://outreachai.in">Go to OutreachAI</a>
+    <a href="${(process.env.NEXT_PUBLIC_APP_URL ?? '/').replace(/\/$/, '') || '/'}">Go to OutreachAI</a>
   </div>
 </body>
 </html>`
