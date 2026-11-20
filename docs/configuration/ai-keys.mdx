@@ -1,0 +1,57 @@
+---
+title: AI Keys
+description: Configure Anthropic, OpenAI, or Gemini for AI-powered features
+---
+
+# AI Keys
+
+OutreachAI uses AI for lead enrichment (personalized openers), the lemAgent assistant, and sequence generation. You can set keys globally via environment variables or per-user in Settings.
+
+## Supported providers
+
+### Anthropic (Claude)
+
+Get a key at [console.anthropic.com](https://console.anthropic.com/).
+
+**Features unlocked:** AI-generated lead openers, lemAgent chat assistant, sequence step suggestions.
+
+Add to `.env`:
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Or set per-user in **Settings** > **AI & Integrations** > **Anthropic API Key**.
+
+### OpenAI (GPT)
+
+Get a key at [platform.openai.com](https://platform.openai.com/api-keys).
+
+**Features unlocked:** AI-generated lead openers, sequence suggestions.
+
+Add to `.env`:
+```
+OPENAI_API_KEY=sk-...
+```
+
+Or set per-user in **Settings** > **AI & Integrations** > **OpenAI API Key**.
+
+### Google Gemini
+
+Get a key at [aistudio.google.com](https://aistudio.google.com/app/apikey).
+
+**Features unlocked:** AI-generated lead openers, sequence suggestions.
+
+Add to `.env`:
+```
+GEMINI_API_KEY=AIza...
+```
+
+Or set per-user in **Settings** > **AI & Integrations** > **Gemini API Key**.
+
+## Priority order
+
+When multiple keys are configured, OutreachAI uses them in this order: Anthropic → OpenAI → Gemini. Per-user keys take priority over global environment variable keys.
+
+## Cost
+
+AI API calls are charged by your provider at their standard rates. OutreachAI makes no margin on AI usage.

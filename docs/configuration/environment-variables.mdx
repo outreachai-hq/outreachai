@@ -1,0 +1,49 @@
+---
+title: Environment Variables
+description: Full reference for all supported environment variables
+---
+
+# Environment Variables
+
+Copy `.env.docker.example` to `.env` and fill in the values before starting the app.
+
+## Required
+
+| Variable | Description | Example |
+|---|---|---|
+| `NEXTAUTH_SECRET` | Random secret for session encryption | `openssl rand -hex 32` |
+| `ENCRYPTION_KEY` | Key used to encrypt stored SMTP passwords and API keys | `openssl rand -hex 32` |
+| `NEXTAUTH_URL` | Public URL of your instance | `http://localhost:3000` |
+| `POSTGRES_PASSWORD` | Password for the bundled PostgreSQL container | `supersecret` |
+| `DATABASE_URL` | Full Postgres connection string (auto-set in Docker) | `postgresql://postgres:pw@db:5432/outreachai` |
+
+## Auth providers (optional)
+
+| Variable | Description |
+|---|---|
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `GITHUB_CLIENT_ID` | GitHub OAuth client ID |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret |
+| `MICROSOFT_CLIENT_ID` | Microsoft Entra client ID |
+| `MICROSOFT_CLIENT_SECRET` | Microsoft Entra client secret |
+| `MICROSOFT_TENANT_ID` | Tenant ID (default: `common`) |
+| `APPLE_ID` | Apple Sign In client ID |
+| `APPLE_SECRET` | Apple Sign In client secret |
+
+## Email (optional)
+
+| Variable | Description |
+|---|---|
+| `RESEND_API_KEY` | Resend API key for transactional email (welcome emails, password reset) |
+| `NEXT_PUBLIC_APP_URL` | Public-facing URL used in email links (falls back to `NEXTAUTH_URL`) |
+
+## AI providers (optional — can also be set per-user in Settings)
+
+| Variable | Description |
+|---|---|
+| `ANTHROPIC_API_KEY` | Anthropic API key for AI features |
+| `OPENAI_API_KEY` | OpenAI API key for AI features |
+| `GEMINI_API_KEY` | Google Gemini API key for AI features |
+
+See [AI Keys](/configuration/ai-keys) for what each key unlocks.

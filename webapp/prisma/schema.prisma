@@ -1,0 +1,1176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String?   // null for OAuth (Google) users
+  name          String?
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  plan               String    @default("free") // free | pro
+  extensionConnected   Boolean   @default(false)
+  extensionConnectedAt DateTime?
+  passwordResetToken   String?
+  passwordResetExpiry  DateTime?
+  aiKeyAnthropic       String?  @db.Text
+  aiKeyOpenai          String?  @db.Text
+  aiKeyGemini          String?  @db.Text
+  apolloApiKey         String?  @db.Text
+  hunterApiKey         String?  @db.Text
+  onboardingCompleted  Boolean  @default(false)
+  onboardingStep       Int      @default(0)
+  workspaceId          String?
+  linkedInPostHour     Int      @default(19)
+  linkedInPostTz       String   @default("Asia/Kolkata")
+  linkedInClientId     String?  @db.Text
+  linkedInClientSecret String?  @db.Text
+  // Plan 8 — auto-draft AI replies on inbound messages.
+  // 'off' | 'email' | 'linkedin' | 'both'
+  aiReplyAutoDraft     String   @default("off")
+  websiteTrackingId    String?  @unique
+  // WhatsApp via mf-engine — waApiKey + waWebhookSecret are encrypted at rest
+  waApiKey             String?  @db.Text
+  waPhone              String?
+  waBaseUrl            String?
+  waWebhookSecret      String?  @db.Text
+  createdAt            DateTime  @default(now())
+
+  contacts            Contact[]
+  templates           Template[]
+  sequences           Sequence[]
+  leadLists           LeadList[]
+  campaigns           Campaign[]
+  linkedinAccounts    LinkedInAccount[]
+  linkedInPosts       LinkedInPost[]
+  capturedPosts       CapturedPost[]
+  emailAccounts       EmailAccount[]
+  webhookEndpoints    WebhookEndpoint[]
+  emailMessages       EmailMessage[]
+  conversations       Conversation[]
+  companies           Company[]
+  leadActivities      LeadActivity[]
+  tasks               Task[]
+  linkedInActions     LinkedInAction[]
+  marketingCampaigns  MarketingCampaign[]
+  unsubscribes        Unsubscribe[]
+  warmupAccounts      WarmupAccount[]
+  ownedWorkspaces     Workspace[]       @relation("OwnedWorkspaces")
+  workspaceMemberships WorkspaceMember[]
+  workspaceInvitesSent WorkspaceInvite[] @relation("InvitedByUser")
+  snippets             Snippet[]
+  schedules            Schedule[]
+  conversationLabels   ConversationLabel[]
+  customFieldDefs      CustomFieldDef[]
+  draftMessages        DraftMessage[]
+  dashboards           Dashboard[]
+  watchlists           Watchlist[]
+  pipelines            Pipeline[]
+  deals                Deal[]
+  dealActivities       DealActivity[]
+  phoneNumbers         PhoneNumber[]
+  calls                Call[]
+  deliverabilityAlerts DeliverabilityAlert[]
+  meetingPage          MeetingPage?
+  workflows            Workflow[]
+  websiteVisits        WebsiteVisit[]
+}
+
+model WebsiteVisit {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trackingId        String   // matches User.websiteTrackingId
+  ip                String?
+  resolvedOrg       String?  // company name from IP (ipinfo.io)
+  resolvedDomain    String?  // domain from IP org
+  matchedLeadId     String?  // if IP matched a known lead
+  matchedContactId  String?  // if IP matched a known contact
+  matchedCompanyId  String?  // if IP matched a known company
+  url               String?  @db.Text
+  referrer          String?  @db.Text
+  userAgent         String?
+  visitedAt         DateTime @default(now())
+
+  @@index([userId, visitedAt(sort: Desc)])
+  @@index([trackingId, visitedAt(sort: Desc)])
+  @@index([matchedLeadId])
+}
+
+model EmailAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider     String   @default("smtp") // smtp | gmail | ses
+  name         String
+  email        String
+  smtpHost     String?
+  smtpPort     Int?
+  smtpUser     String?
+  smtpPass     String?
+  imapHost     String?
+  imapPort     Int?
+  // AWS SES fields (encrypted at rest)
+  awsRegion              String?
+  awsAccessKeyId         String?  @db.Text
+  awsSecretAccessKey     String?  @db.Text
+  sesConfigurationSet    String?  @default("mytaxesfilings-bulk")
+  // SendGrid (encrypted at rest)
+  sendgridApiKey    String?  @db.Text
+  isDefault    Boolean  @default(false)
+  dailyLimit   Int      @default(50)
+  dailySendCount   Int      @default(0)
+  dailySendResetAt DateTime?
+  signature    String?  @db.Text
+  warmupActive Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  messages     EmailMessage[]
+  marketingCampaigns MarketingCampaign[]
+  warmupAccount      WarmupAccount?
+
+  @@index([userId])
+}
+
+model EmailMessage {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailAccountId String
+  emailAccount   EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+  contactId      String?
+  to             String
+  subject        String
+  body           String   @db.Text
+  status         String   @default("sent") // sent | opened | replied | bounced
+  sentAt         DateTime @default(now())
+  openedAt       DateTime?
+  repliedAt      DateTime?
+  trackingId     String   @unique @default(cuid())
+
+  @@index([userId])
+}
+
+// Plan 2 — channel-agnostic conversation thread. Each conversation belongs to
+// one channel (email | linkedin | sms | whatsapp). The channel-specific
+// identifier (linkedinProfileId for LinkedIn, emailThreadKey for email, etc.)
+// is what the unique constraint is built around so per-channel upserts stay
+// clean. Replaced the legacy LinkedIn-only InboxThread table (retired
+// 2026-06-23).
+model Conversation {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Optional links to other domain objects. No foreign-key relation lines yet
+  // to keep the migration tight — they're plain ID columns.
+  contactId         String?
+  leadId            String?
+  campaignId        String?
+
+  channel           String   // 'email' | 'linkedin' | 'sms' | 'whatsapp'
+  subject           String?  // null for chat-style channels
+
+  // Channel-specific identifying keys (exactly one is non-null per row)
+  linkedinProfileId String?
+  emailThreadKey    String?   // normalised: lowercased participant email + subject
+  smsPhone          String?
+
+  // Display
+  participantName   String
+  participantEmail  String?
+  participantUrl    String?
+  avatarUrl         String?
+
+  // State
+  status            String   @default("open")  // open | done | snoozed
+  unread            Boolean  @default(false)
+  labels            String[] @default([])      // 'interested' | 'not_interested' | 'out_of_office' | 'favorite' | <custom>
+  lastMessageAt     DateTime?
+  lastSenderIsMe    Boolean  @default(true)
+  syncedAt          DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  messages          Message[]
+
+  @@unique([userId, channel, linkedinProfileId])
+  @@unique([userId, channel, emailThreadKey])
+  @@index([userId, status, lastMessageAt(sort: Desc)])
+  @@index([userId, contactId])
+  @@index([userId, channel])
+}
+
+model Message {
+  id              String       @id @default(cuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  direction       String       // 'in' | 'out'
+  body            String       @db.Text
+  html            String?      @db.Text
+  externalId      String?      // provider message-id (gmail msgId / li msgId / pixel trackingId)
+  attachments     Json?
+  sentAt          DateTime
+  createdAt       DateTime     @default(now())
+
+  @@index([conversationId, sentAt])
+  @@index([externalId])
+}
+
+model Contact {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileId   String
+  name        String
+  email       String?
+  company     String?     // cached display string; mirrors companyRel.name when set
+  companyId   String?
+  companyRel  Company?   @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  headline    String?
+  linkedinUrl String?
+  status      String    @default("sent") // sent | followup | replied
+  sentAt      DateTime  @default(now())
+  followupAt  DateTime?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  // Plan 5 — user-defined columns. Shape: { "<defKey>": <value> }
+  customFields Json     @default("{}")
+  // Per-AI-column run status, keyed by defKey. { status, lastRunAt, error? }
+  aiColumnRuns Json     @default("{}")
+
+  activities  LeadActivity[]
+
+  @@index([userId])
+  @@index([companyId])
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  subject   String?
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model LinkedInAccount {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  email            String?
+  profileUrl       String?
+  avatarColor      String   @default("#ef4444")
+  isDefault        Boolean  @default(false)
+  connectedAt      DateTime @default(now())
+  accessToken      String?  @db.Text
+  refreshToken     String?  @db.Text
+  tokenExpiry      DateTime?
+  linkedInMemberId String?
+  linkedInScope    String?  // scopes granted by user e.g. "w_member_social,openid,profile"
+
+  posts LinkedInPost[]
+
+  @@index([userId])
+}
+
+model Sequence {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  steps     Json
+  // steps: [{ id, type: 'visit_profile'|'connection_request'|'wait'|'chat_message', waitDays, message, subject }]
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  campaigns Campaign[]
+
+  @@index([userId])
+}
+
+model LeadList {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  leads     Lead[]
+  campaigns Campaign[]
+  marketingCampaigns MarketingCampaign[]
+  createdAt DateTime   @default(now())
+
+  @@index([userId])
+}
+
+// Plan 3 — Companies module. Replaces the free-text Contact.company /
+// Lead.company strings with structured account-level rows. The text columns
+// are kept on Contact/Lead as a cached display string (mirroring companyRel.name)
+// so list views don't pay an extra join.
+model Company {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name           String
+  // Lowercased + de-suffixed for dedupe ("Stripe Inc." == "STRIPE").
+  // Unique per user.
+  normalizedName String
+  domain         String?  // primary email/web domain (e.g. "stripe.com")
+  websiteUrl     String?
+  linkedinUrl    String?
+
+  // Firmographic
+  industry       String?
+  market         String?    // B2B | B2C | Marketplace | Public | Non-profit | ...
+  type           String?    // LLC | Corp | Public | Private | ...
+  size           String?    // '1-10' | '11-50' | '51-200' | ...
+  employeeCount  Int?
+  foundedYear    Int?
+
+  // Geo
+  city           String?
+  state          String?
+  region         String?
+  country        String?    // ISO-2 ideally
+
+  // Tech / funding
+  technologies   String[]   @default([])
+  lastFundingDate   DateTime?
+  lastFundingAmount Int?
+  lastFundingStage  String?
+
+  // Free-form
+  notes          String?    @db.Text
+  tags           String[]   @default([])
+
+  // Denormalised aggregates — refreshed nightly via cron OR transactionally
+  // by the create/delete sites in Iter 17.
+  contactCount   Int        @default(0)
+  leadCount      Int        @default(0)
+  lastActivityAt DateTime?
+
+  // Plan 5 — user-defined columns.
+  customFields   Json       @default("{}")
+  aiColumnRuns   Json       @default("{}")
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  contacts       Contact[]
+  leads          Lead[]
+  activities     LeadActivity[]
+
+  @@unique([userId, normalizedName])
+  @@index([userId, name])
+  @@index([userId, industry])
+  @@index([userId, country])
+  @@index([userId, domain])
+}
+
+model Lead {
+  id           String    @id @default(cuid())
+  leadListId   String
+  leadList     LeadList  @relation(fields: [leadListId], references: [id], onDelete: Cascade)
+  firstName    String
+  lastName     String?
+  email        String?
+  company      String?     // cached display string; mirrors companyRel.name when set
+  companyId    String?
+  companyRel   Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  linkedinUrl  String?
+  headline     String?
+  // AI enrichment columns
+  companyNews  String?   @db.Text
+  challenges   String?   @db.Text
+  aiOpener     String?   @db.Text
+  aboutSection String?   @db.Text  // LinkedIn about section (scraped by extension)
+  recentPost   String?   @db.Text  // Most recent LinkedIn post text (scraped by extension)
+  status       String    @default("pending") // pending | in_progress | completed | replied | bounced
+  score         Int      @default(0)
+  openCount     Int      @default(0)
+  clickCount    Int      @default(0)
+  lastOpenedAt  DateTime?
+  lastClickedAt DateTime?
+  phone         String?
+  tags          String[] @default([])
+  // Plan 5 — user-defined columns.
+  customFields  Json     @default("{}")
+  aiColumnRuns  Json     @default("{}")
+  createdAt    DateTime  @default(now())
+
+  campaignLeads        CampaignLead[]
+  marketingCampaignSends MarketingCampaignSend[]
+  activities             LeadActivity[]
+
+  @@index([leadListId])
+  @@index([companyId])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leadId      String?
+  campaignId  String?
+  type        String    @default("custom") // call | email | linkedin | custom
+  title       String
+  notes       String?
+  dueAt       DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([dueAt])
+}
+
+// Plan 4 — per-lead chronological event log. Emitted from the sequence runner,
+// inbox sync, IMAP poller, tracking pixels, task lifecycle, status changes.
+// Designed for fast per-lead reads (timeline UI) AND per-company rollups.
+model LeadActivity {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Target — exactly one of leadId / contactId is typically set; companyId
+  // is auto-resolved from the lead's or contact's companyId for cheap rollups.
+  leadId         String?
+  lead           Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  contactId      String?
+  contact        Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  companyId      String?
+  company        Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // What happened — see lib/activity.ts for the catalog
+  type           String   // 'email.sent' | 'email.opened' | 'email.replied' | 'email.bounced' | 'email.failed' | 'linkedin.invite_sent' | 'linkedin.message_sent' | 'linkedin.message_received' | 'task.created' | 'task.completed' | 'note.added' | 'status.changed' | 'signal.fired' | 'enrichment.completed' | …
+  channel        String?  // 'email' | 'linkedin' | 'sms' | 'call' | 'manual' | 'signal' | 'system'
+  source         String?  // 'campaign' | 'manual' | 'agent' | 'extension' | 'system'
+
+  // Provenance — all optional, populated where known
+  campaignId     String?
+  sequenceStepId String?
+  conversationId String?
+  messageId      String?
+  taskId         String?
+
+  // Human-readable line for the UI; payload carries structured extras
+  title          String
+  body           String?  @db.Text
+  payload        Json?
+
+  occurredAt     DateTime @default(now())
+  actorUserId    String?  // null = system / runner; set for explicit user actions
+
+  @@index([userId, leadId, occurredAt(sort: Desc)])
+  @@index([userId, contactId, occurredAt(sort: Desc)])
+  @@index([userId, companyId, occurredAt(sort: Desc)])
+  @@index([userId, occurredAt(sort: Desc)])
+  @@index([campaignId, occurredAt(sort: Desc)])
+}
+
+model EmailEvent {
+  id           String   @id @default(cuid())
+  trackingId   String   // references EmailMessage.trackingId
+  leadId       String?
+  campaignId   String?
+  type         String   // opened | clicked | replied | bounced
+  url          String?  // for click events
+  createdAt    DateTime @default(now())
+
+  @@index([trackingId])
+  @@index([leadId])
+}
+
+model Campaign {
+  id               String         @id @default(cuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  sequenceId       String
+  sequence         Sequence       @relation(fields: [sequenceId], references: [id])
+  leadListId       String
+  leadList         LeadList       @relation(fields: [leadListId], references: [id])
+  status           String         @default("draft") // draft | active | paused | completed
+  launchedAt       DateTime?
+  timezone         String         @default("Asia/Kolkata")
+  sendWindow       Json           @default("[8,18]")  // [startHour, endHour] in local time — legacy cache
+  emailAccountIds  String[]       @default([])         // sender pool; empty -> falls back to isDefault
+  dailyEmailLimit  Int            @default(50)         // per-campaign cap (across the pool)
+  // Plan 7 — optional reusable Schedule. When set, isWithinSchedule wins over
+  // the legacy timezone/sendWindow pair; runner reads either.
+  scheduleId       String?
+  schedule         Schedule?      @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  createdAt        DateTime       @default(now())
+  leads            CampaignLead[]
+
+  @@index([userId])
+}
+
+// Plan 9 — User-composable analytics dashboards.
+// `tabs` JSON shape: [{ id, name, widgets: [{ id, type, title, config, position }] }]
+// Widget data is fetched on-demand by /api/dashboards/[id]/widgets/[widgetId]/data;
+// only the configs live here.
+model Dashboard {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  tabs        Json     @default("[]")
+  filters     Json     @default("{}")  // global filter defaults (dateRange, campaignIds, etc.)
+
+  shareToken  String?  @unique         // null = not shared
+  sharedAt    DateTime?
+  position    Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, position])
+}
+
+// Plan 8 — Outreach Queue. AI-drafted (or sequence-manual, or user-saved)
+// messages land here `pending` for review; approve-send promotes them into a
+// real EmailMessage / LinkedInAction. Statuses:
+//   pending  — newly created, waiting on user
+//   edited   — user changed body since creation
+//   approved — approve-send started; transient
+//   sent     — promotion complete; sentMessageId points at the real send row
+//   rejected — user explicitly rejected
+//   expired  — older than 7 days (cleanup cron)
+model DraftMessage {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  channel         String   // 'email' | 'linkedin' | 'sms'
+  subject         String?  // null for chat-style channels
+  body            String   @db.Text
+  htmlBody        String?  @db.Text
+
+  conversationId  String?
+  leadId          String?
+  contactId       String?
+  campaignId      String?
+  sequenceStepId  String?
+
+  status          String   @default("pending")
+  scheduledFor    DateTime?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  sentAt          DateTime?
+  sentMessageId   String?  // EmailMessage.id or LinkedInAction.id post-send
+
+  createdByAi     Boolean  @default(true)
+  aiProvider      String?  // 'anthropic' | 'openai' | 'gemini'
+  aiModel         String?
+  aiPrompt        String?  @db.Text
+  source          String   @default("ai")  // 'ai' | 'sequence_manual' | 'manual_draft'
+
+  priority        Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, status, scheduledFor])
+  @@index([userId, status, priority(sort: Desc), createdAt(sort: Desc)])
+  @@index([conversationId])
+}
+
+// Plan 5 — user-defined columns on Lead/Contact/Company. Per-user, per-entity
+// definitions. Values live inline as JSON on the entity (Contact.customFields
+// / Lead.customFields / Company.customFields), keyed by `CustomFieldDef.key`.
+// For type='ai', the per-row evaluation status lives in `aiColumnRuns[key]`.
+model CustomFieldDef {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entity       String   // 'lead' | 'contact' | 'company'
+  key          String   // machine name; /^[a-z][a-z0-9_]{0,30}$/
+  label        String   // display label
+  type         String   // 'text' | 'number' | 'date' | 'select' | 'multiselect' | 'url' | 'bool' | 'ai'
+  options      Json?    // ['Low','Med','High'] for select/multiselect
+  defaultValue Json?
+
+  // AI-column-only fields
+  aiPrompt     String?  @db.Text  // template with {{firstName}} etc.
+  aiProvider   String?  // 'anthropic' | 'openai' | 'gemini'
+  aiModel      String?
+  aiMaxTokens  Int?     @default(200)
+  aiAutoRun    Boolean  @default(false)
+
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, entity, key])
+  @@index([userId, entity, position])
+}
+
+// Plan 7 — Snippets. Short reusable text fragments insertable with /key in any
+// composer (inbox reply box, sequence step editor). Per-user, not shared.
+model Snippet {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key       String   // slug, lowercase + underscores; insertable as /key
+  label     String
+  body      String   @db.Text
+  tags      String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+// Plan 7 — named reusable send-window calendars. Replaces per-campaign
+// timezone+sendWindow inline pairs. Holiday support stored as JSON array of
+// { date: 'YYYY-MM-DD', label }.
+model Schedule {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  timezone    String     // IANA, e.g. 'Asia/Kolkata'
+  weeklyHours Json       @default("{}")  // { mon: [[9,18]], tue: [[9,18]], ... }
+  holidays    Json       @default("[]")  // [{ date: 'YYYY-MM-DD', label }]
+  isDefault   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  campaigns   Campaign[]
+
+  @@index([userId])
+}
+
+// Plan 7 — user/team-defined labels on Conversations (extends Plan 2). Five
+// rows seeded with builtIn=true the first time a user loads the inbox.
+model ConversationLabel {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key       String   // 'interested' | 'not_interested' | 'out_of_office' | 'favorite' | 'meeting_booked' | <custom>
+  label     String
+  color     String   @default("#888")
+  builtIn   Boolean  @default(false)
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+model LinkedInPost {
+  id                String           @id @default(cuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linkedInAccountId String?
+  linkedInAccount   LinkedInAccount? @relation(fields: [linkedInAccountId], references: [id], onDelete: SetNull)
+  content           String           @db.Text
+  scheduledFor      DateTime
+  status            String           @default("scheduled") // scheduled | posted | failed | skipped
+  postedAt          DateTime?
+  linkedInPostId    String?
+  error             String?          @db.Text
+  createdAt         DateTime         @default(now())
+
+  @@unique([userId, scheduledFor])
+  @@index([status, scheduledFor])
+}
+
+model CampaignLead {
+  id            String    @id @default(cuid())
+  campaignId    String
+  campaign      Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  leadId        String
+  lead          Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  currentStep   Int       @default(0)
+  // Plan 6 — step lookup by id when present (supports branching via
+  // condition steps). null = legacy lead, runner falls back to currentStep.
+  currentStepId String?
+  status        String    @default("pending") // pending | in_progress | replied | completed | bounced | failed
+  nextActionAt  DateTime?
+  // Retry / bounce accounting — see lib/sequenceRunner.ts
+  // attempts counts SMTP tries on the CURRENT step; resets to 0 on advance.
+  attempts      Int       @default(0)
+  lastError     String?
+  lastAttemptAt DateTime?
+  autoStopped   Boolean   @default(false)
+  stoppedReason String?   // 'reply' | 'unsubscribe' | 'bounce' | 'manual'
+  createdAt     DateTime  @default(now())
+
+  @@unique([campaignId, leadId])
+  @@index([campaignId])
+}
+
+model LinkedInAction {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaignLeadId String?
+  campaignId     String?
+  leadId         String?
+  profileId      String
+  profileUrl     String?
+  actionType     String    // visit_profile | connection_request | chat_message
+  message        String?   @db.Text
+  status         String    @default("pending") // pending | picked_up | done | failed
+  pickedUpAt     DateTime?
+  doneAt         DateTime?
+  error          String?
+  createdAt      DateTime  @default(now())
+
+  @@index([userId, status])
+  @@index([profileId])
+}
+
+model WebhookEndpoint {
+  id         String            @id @default(cuid())
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url        String
+  events     String            @db.Text
+  secret     String?
+  active     Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  deliveries WebhookDelivery[]
+
+  @@index([userId])
+}
+
+model WebhookDelivery {
+  id         String          @id @default(cuid())
+  endpointId String
+  endpoint   WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  event      String
+  payload    String          @db.Text
+  status     String          @default("pending")
+  statusCode Int?
+  attempts   Int             @default(0)
+  createdAt  DateTime        @default(now())
+
+  @@index([endpointId])
+}
+
+model MarketingCampaign {
+  id              String    @id @default(cuid())
+  userId          String
+  name            String
+  subject         String
+  htmlBody        String    @db.Text
+  fromName        String
+  emailAccountId  String
+  status          String    @default("draft") // draft | scheduled | sending | sent | paused
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  recipientListId String
+  stats                Json      @default("{}")
+  abEnabled            Boolean   @default(false)
+  abSubjectB           String?
+  abSplitPercent       Int       @default(20)
+  abWinnerMetric       String    @default("open")
+  abTestDurationHours  Int       @default(4)
+  abWinner             String?
+  abWinnerSentAt       DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailAccount    EmailAccount @relation(fields: [emailAccountId], references: [id])
+  leadList        LeadList  @relation(fields: [recipientListId], references: [id])
+  sends           MarketingCampaignSend[]
+
+  @@index([userId])
+}
+
+model MarketingCampaignSend {
+  id               String    @id @default(cuid())
+  campaignId       String
+  leadId           String
+  leadEmail        String
+  status           String    @default("pending") // pending | sent | delivered | bounced | complained | failed
+  trackingId       String    @unique @default(cuid())
+  sesMessageId     String?   // SES MessageId — correlates SNS bounce/complaint/delivery events
+  sentAt           DateTime?
+  deliveredAt      DateTime?
+  openedAt         DateTime?
+  clickedAt        DateTime?
+  complainedAt     DateTime?
+  unsubscribedAt   DateTime?
+  abVariant        String?
+  createdAt        DateTime  @default(now())
+  campaign         MarketingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  lead             Lead      @relation(fields: [leadId], references: [id])
+
+  @@index([campaignId])
+  @@index([trackingId])
+  @@index([sesMessageId])
+}
+
+model Unsubscribe {
+  id        String   @id @default(cuid())
+  email     String
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([email, userId])
+  @@index([userId])
+}
+
+model WarmupAccount {
+  id              String    @id @default(cuid())
+  userId          String
+  emailAccountId  String    @unique
+  status          String    @default("active")
+  dailyTarget     Int       @default(5)
+  currentDay      Int       @default(0)
+  totalSent       Int       @default(0)
+  totalReceived   Int       @default(0)
+  totalReplied    Int       @default(0)
+  startedAt       DateTime  @default(now())
+  lastRunAt       DateTime?
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailAccount    EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+  sentEmails      WarmupEmail[]
+
+  @@index([userId])
+}
+
+model WarmupEmail {
+  id              String    @id @default(cuid())
+  warmupAccountId String
+  direction       String
+  fromEmail       String
+  toEmail         String
+  subject         String
+  body            String    @db.Text
+  messageId       String?
+  replied         Boolean   @default(false)
+  repliedAt       DateTime?
+  sentAt          DateTime  @default(now())
+  warmupAccount   WarmupAccount @relation(fields: [warmupAccountId], references: [id], onDelete: Cascade)
+
+  @@index([warmupAccountId])
+}
+
+model Workspace {
+  id        String    @id @default(cuid())
+  name      String
+  ownerId   String
+  createdAt DateTime  @default(now())
+  owner     User      @relation("OwnedWorkspaces", fields: [ownerId], references: [id])
+  members   WorkspaceMember[]
+  invites   WorkspaceInvite[]
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String    @default("member")
+  joinedAt    DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+}
+
+model WorkspaceInvite {
+  id          String    @id @default(cuid())
+  workspaceId String
+  email       String
+  role        String    @default("member")
+  token       String    @unique @default(cuid())
+  invitedById String?
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy   User?     @relation("InvitedByUser", fields: [invitedById], references: [id])
+
+  @@unique([workspaceId, email])
+}
+
+model CapturedPost {
+  id            String   @id @default(cuid())
+  userId        String
+  profileId     String   // LinkedIn username slug, e.g. "neil-borate-1a435a57"
+  profileName   String
+  profileUrl    String?
+  postText      String   @db.Text
+  postUrl       String?
+  postedAt      String?  // raw date string from LinkedIn DOM
+  likes         Int?
+  comments      Int?
+  // AI-generated repurposed variants
+  twitterThread  String?  @db.Text
+  linkedinRepost String?  @db.Text
+  newsletter     String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, profileId])
+  @@index([userId, createdAt])
+}
+
+model IssueReport {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  type        String   @default("bug")
+  email       String?
+  url         String?
+  userAgent   String?
+  status      String   @default("open") // open | in_progress | resolved | wont_fix
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Watchlist {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  signalType  String   // 'job_change' | 'linkedin_engagement' | 'funding' | 'hiring' | 'website_visit' | 'custom'
+  description String?
+  config      Json     @default("{}")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  signals     WatchlistSignal[]
+
+  @@index([userId, active])
+}
+
+model WatchlistSignal {
+  id          String    @id @default(cuid())
+  watchlistId String
+  watchlist   Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+  userId      String
+  leadId      String?
+  contactId   String?
+  companyId   String?
+  title       String
+  body        String?   @db.Text
+  payload     Json?
+  firedAt     DateTime  @default(now())
+  consumed    Boolean   @default(false)
+
+  @@index([watchlistId, firedAt(sort: Desc)])
+  @@index([userId, firedAt(sort: Desc)])
+}
+
+model PhoneNumber {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  number    String
+  label     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  calls     Call[]
+
+  @@index([userId])
+}
+
+model Call {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leadId        String?
+  contactId     String?
+  campaignId    String?
+  phoneNumberId String?
+  phoneNumber   PhoneNumber? @relation(fields: [phoneNumberId], references: [id], onDelete: SetNull)
+  fromNumber    String?
+  toNumber      String
+  direction     String      @default("outbound") // outbound | inbound
+  status        String      @default("completed") // completed | no_answer | failed | voicemail
+  durationSec   Int?
+  notes         String?     @db.Text
+  outcome       String?     // 'interested' | 'not_interested' | 'callback' | 'wrong_number' | 'left_voicemail'
+  startedAt     DateTime    @default(now())
+  endedAt       DateTime?
+  createdAt     DateTime    @default(now())
+
+  @@index([userId, startedAt(sort: Desc)])
+}
+
+// Meeting Scheduler — public booking pages and bookings management.
+model MeetingPage {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug        String    @unique   // URL slug — outreachai.in/meet/{slug}
+  title       String    @default("Book a meeting")
+  description String?   @db.Text
+  duration    Int       @default(30)    // minutes: 15 | 30 | 45 | 60
+  timezone    String    @default("Asia/Kolkata")
+  weeklyHours Json      @default("{}")  // { mon:[[9,17]], tue:[[9,17]], ... } 24h
+  bufferMins  Int       @default(15)    // gap between bookings
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+
+  @@index([slug])
+}
+
+model Booking {
+  id            String      @id @default(cuid())
+  meetingPageId String
+  meetingPage   MeetingPage @relation(fields: [meetingPageId], references: [id], onDelete: Cascade)
+  guestName     String
+  guestEmail    String
+  startAt       DateTime
+  endAt         DateTime
+  notes         String?     @db.Text
+  status        String      @default("confirmed")  // confirmed | cancelled
+  cancelToken   String      @unique @default(cuid())
+  createdAt     DateTime    @default(now())
+
+  @@index([meetingPageId, startAt])
+}
+
+// Plan 12 — In-house CRM Pipeline.
+model Pipeline {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String          @default("Sales Pipeline")
+  isDefault Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  stages    PipelineStage[]
+  deals     Deal[]
+
+  @@index([userId])
+}
+
+model PipelineStage {
+  id          String    @id @default(cuid())
+  pipelineId  String
+  pipeline    Pipeline  @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  name        String
+  position    Int
+  probability Int       @default(50)
+  type        String    @default("open")
+  color       String    @default("#6366f1")
+  deals       Deal[]
+
+  @@index([pipelineId, position])
+}
+
+model Deal {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pipelineId  String
+  pipeline    Pipeline      @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stageId     String
+  stage       PipelineStage @relation(fields: [stageId], references: [id])
+  title       String
+  value       Float?
+  currency    String        @default("USD")
+  closeDate   DateTime?
+  probability Int?
+  description String?       @db.Text
+  lostReason  String?
+  contactId   String?
+  companyId   String?
+  status      String        @default("open")
+  wonAt       DateTime?
+  lostAt      DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  activities  DealActivity[]
+
+  @@index([userId, stageId])
+  @@index([userId, status])
+  @@index([pipelineId])
+}
+
+model DealActivity {
+  id          String   @id @default(cuid())
+  dealId      String
+  deal        Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String
+  title       String
+  body        String?  @db.Text
+  payload     Json?
+  actorUserId String?
+  createdAt   DateTime @default(now())
+
+  @@index([dealId, createdAt(sort: Desc)])
+}
+
+// Plan 13 — Workflow Automation. Named rules: one trigger + optional conditions
+// + one or more actions. `conditions` and `actions` are JSON arrays.
+model Workflow {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  active      Boolean       @default(true)
+  triggerKey  String
+  conditions  Json          @default("[]")
+  actions     Json          @default("[]")
+  runCount    Int           @default(0)
+  lastRunAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  runs        WorkflowRun[]
+
+  @@index([userId, active])
+  @@index([triggerKey, active])
+}
+
+model WorkflowRun {
+  id          String   @id @default(cuid())
+  workflowId  String
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  userId      String
+  entityId    String?
+  entityType  String?
+  result      String   // 'success' | 'skipped' | 'error'
+  error       String?
+  actionsRun  Int      @default(0)
+  payload     Json?
+  createdAt   DateTime @default(now())
+
+  @@index([workflowId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+// Plan 11 — Deliverability alert rules. Notifies users when email health
+// metrics cross user-defined thresholds.
+model DeliverabilityAlert {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metric    String   // 'bounce_rate' | 'open_rate' | 'reply_rate' | 'score'
+  condition String   // 'below' | 'above'
+  threshold Float    // e.g. 5.0 for 5%
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}

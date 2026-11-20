@@ -1,0 +1,258 @@
+@import "tailwindcss";
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Hide scrollbar for horizontally-scrollable strips (e.g. mobile top-bar tabs). */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Brand color tokens ────────────────────────────────────────────────────── */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --brand-blue:       #0A66C2;   /* OutreachAI primary — LinkedIn blue */
+  --brand-blue-hover: #0855a5;
+  --brand-violet:     #7c3aed;
+  --brand-gradient:   linear-gradient(135deg, #0A66C2 0%, #7c3aed 100%);
+
+  /* ── Status chip tokens (light mode) ──────────────────────────────────────
+     Single source of truth. Components reference these — never hardcode.
+     Pattern per gl-ninja-web: bg / text / border per semantic status.      */
+
+  /* replied / success / won / active */
+  --chip-replied-bg: #f0fdf4;   --chip-replied-text: #166534;   --chip-replied-border: #86efac;
+  /* sent / info / in-progress / connected / blue */
+  --chip-sent-bg:    #eff6ff;   --chip-sent-text:    #1e40af;   --chip-sent-border:    #bfdbfe;
+  /* pending / draft / neutral */
+  --chip-pending-bg: #f8fafc;   --chip-pending-text: #475569;   --chip-pending-border: #cbd5e1;
+  /* followup / opened / warning-orange */
+  --chip-followup-bg: #fff7ed;  --chip-followup-text: #9a3412;  --chip-followup-border: #fdba74;
+  /* paused / scheduled / warning-yellow */
+  --chip-paused-bg:  #fefce8;   --chip-paused-text:  #854d0e;   --chip-paused-border:  #fde047;
+  /* bounced / error / lost */
+  --chip-error-bg:   #fef2f2;   --chip-error-text:   #991b1b;   --chip-error-border:   #fca5a5;
+  /* completed / purple */
+  --chip-purple-bg:  #faf5ff;   --chip-purple-text:  #6b21a8;   --chip-purple-border:  #d8b4fe;
+  /* ab-testing */
+  --chip-ab-bg:      #fdf4ff;   --chip-ab-text:      #86198f;   --chip-ab-border:      #f0abfc;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  /* Unify all blue-600/700 usage to the brand color — fixes buttons, links,
+     focus rings, and badges across the entire app without touching each file. */
+  --color-blue-600:   var(--brand-blue);
+  --color-blue-700:   var(--brand-blue-hover);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Hard guarantee: the page itself never scrolls horizontally on any screen.
+   Wide content (tables, filter bars) lives inside its own overflow-x-auto
+   scroller, so this only clips accidental overflow — it never hides real
+   horizontally-scrollable regions. */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Minimum touch target size for interactive elements — helps mobile usability. */
+button, a, [role="button"] {
+  min-height: 36px;
+}
+
+/* Standardised focus ring — brand blue everywhere, no per-component variation. */
+:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 2px;
+}
+
+/* Common component layer — lets pages use .card / .input without repeating tailwind chains. */
+@layer components {
+  .card {
+    @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl;
+  }
+  .input {
+    @apply w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700
+           bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+           placeholder:text-gray-400 dark:placeholder:text-gray-500
+           focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent
+           transition-colors;
+  }
+
+  /* ── Label typography (gl-ninja-web principle) ─────────────────────────────
+     Section labels, table headers, filter labels — all follow the same pattern:
+     tiny, uppercase, tracked, medium weight. One class, consistent everywhere. */
+  .label-sm {
+    font-size: 0.625rem;    /* 10px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.0833em;
+    line-height: 1.66;
+    color: var(--color-gray-500, #6b7280);
+  }
+  .label-xs {
+    @apply text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider;
+  }
+  .section-label {
+    @apply text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider;
+  }
+  .page-title {
+    @apply text-xl font-bold text-gray-900 dark:text-white;
+  }
+  .page-subtitle {
+    @apply text-sm text-gray-500 dark:text-gray-400;
+  }
+
+  /* ── Status chips (gl-ninja-web principle) ─────────────────────────────────
+     All status badges reference CSS variables — light/dark handled by :root
+     and .dark overrides above. Components never need dark: Tailwind prefixes. */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid;
+    white-space: nowrap;
+    line-height: 1.5;
+  }
+
+  /* Semantic chip variants */
+  .chip-replied, .chip-success, .chip-won, .chip-active {
+    background: var(--chip-replied-bg);
+    color: var(--chip-replied-text);
+    border-color: var(--chip-replied-border);
+  }
+  .chip-sent, .chip-info, .chip-in-progress, .chip-connected, .chip-sending {
+    background: var(--chip-sent-bg);
+    color: var(--chip-sent-text);
+    border-color: var(--chip-sent-border);
+  }
+  .chip-pending, .chip-draft, .chip-neutral {
+    background: var(--chip-pending-bg);
+    color: var(--chip-pending-text);
+    border-color: var(--chip-pending-border);
+  }
+  .chip-followup, .chip-opened, .chip-warning {
+    background: var(--chip-followup-bg);
+    color: var(--chip-followup-text);
+    border-color: var(--chip-followup-border);
+  }
+  .chip-paused, .chip-scheduled {
+    background: var(--chip-paused-bg);
+    color: var(--chip-paused-text);
+    border-color: var(--chip-paused-border);
+  }
+  .chip-bounced, .chip-error, .chip-lost, .chip-failed, .chip-declined {
+    background: var(--chip-error-bg);
+    color: var(--chip-error-text);
+    border-color: var(--chip-error-border);
+  }
+  .chip-completed, .chip-purple {
+    background: var(--chip-purple-bg);
+    color: var(--chip-purple-text);
+    border-color: var(--chip-purple-border);
+  }
+  .chip-ab, .chip-ab-testing {
+    background: var(--chip-ab-bg);
+    color: var(--chip-ab-text);
+    border-color: var(--chip-ab-border);
+  }
+}
+
+/* ── Dark mode ────────────────────────────────────────────────────────────────
+   Override Tailwind's CSS custom properties for gray/white so every utility
+   class (bg-white, bg-gray-50, text-gray-900, border-gray-200 …) automatically
+   flips across the whole app without touching individual pages.
+   The gray scale is effectively inverted: lightest becomes darkest.
+──────────────────────────────────────────────────────────────────────────── */
+.dark {
+  color-scheme: dark;
+
+  /* ── Primary blue: lighter in dark mode (gl-ninja-web principle) ──────────
+     #0A66C2 on a dark background lacks contrast. Lighten to blue-400 so
+     active states, links, and focus rings stay readable.                    */
+  --brand-blue:       #60a5fa;   /* blue-400 — visible on dark bg */
+  --brand-blue-hover: #93c5fd;   /* blue-300 — hover state */
+  --color-blue-600:   #60a5fa;
+  --color-blue-700:   #93c5fd;
+
+  /* ── Status chip tokens (dark mode overrides) ─────────────────────────── */
+  --chip-replied-bg:  #14532d;   --chip-replied-text:  #86efac;  --chip-replied-border:  #166534;
+  --chip-sent-bg:     #1e3a8a;   --chip-sent-text:     #93c5fd;  --chip-sent-border:     #1d4ed8;
+  --chip-pending-bg:  #1e293b;   --chip-pending-text:  #94a3b8;  --chip-pending-border:  #334155;
+  --chip-followup-bg: #7c2d12;   --chip-followup-text: #fdba74;  --chip-followup-border: #9a3412;
+  --chip-paused-bg:   #713f12;   --chip-paused-text:   #fde047;  --chip-paused-border:   #854d0e;
+  --chip-error-bg:    #7f1d1d;   --chip-error-text:    #fca5a5;  --chip-error-border:    #991b1b;
+  --chip-purple-bg:   #3b0764;   --chip-purple-text:   #d8b4fe;  --chip-purple-border:   #581c87;
+  --chip-ab-bg:       #4a044e;   --chip-ab-text:       #f0abfc;  --chip-ab-border:       #86198f;
+
+  --color-white:    #1e293b;   /* was #ffffff  → card/panel background   */
+  --color-gray-50:  #0f172a;   /* was #f8fafc  → page background          */
+  --color-gray-100: #1e293b;   /* was #f1f5f9  → subtle card/hover        */
+  --color-gray-200: #334155;   /* was #e2e8f0  → borders                  */
+  --color-gray-300: #475569;   /* was #cbd5e1  → muted borders            */
+  --color-gray-400: #64748b;   /* was #94a3b8  → placeholder / icon       */
+  --color-gray-500: #94a3b8;   /* was #64748b  → secondary text           */
+  --color-gray-600: #cbd5e1;   /* was #475569  → body text                */
+  --color-gray-700: #e2e8f0;   /* was #334155  → primary text (lighter)   */
+  --color-gray-800: #f1f5f9;   /* was #1e293b  → heading text             */
+  --color-gray-900: #f8fafc;   /* was #0f172a  → strongest text           */
+  --color-gray-950: #0f172a;   /* page/outermost background               */
+
+  /* Inputs & form elements */
+  --tw-ring-color: var(--brand-blue);
+}
+
+/* ── Readable text in dark mode ───────────────────────────────────────────────
+   The palette hack above remaps --color-white / --color-gray-* so that BARE
+   utility classes auto-invert (e.g. `bg-white` → dark card, `text-gray-900` →
+   light text). That works for marketing pages, which only use bare classes.
+
+   But the rest of the app is written with explicit `dark:` variants
+   (`dark:text-white`, `dark:text-gray-100`, `dark:bg-gray-900` …). The token
+   remap inverts those too, so every light-intent text/icon colour
+   (`dark:text-white`, `dark:text-gray-50/100/200/300`) collapses to dark slate
+   and disappears against the dark app shell — headings, sidebar labels, button
+   text and icons all go invisible.
+
+   Fix: force those light-intent text variants back to genuinely light values on
+   the dark shell. Inside a light "card" surface (the `dark:bg-gray-600/700/800/900`
+   panels, which the hack flips to near-white) revert them to dark slate so they
+   stay readable on the light card. Un-layered rules win over Tailwind utilities;
+   the card-scoped rules have higher specificity so they win inside cards. */
+
+/* bare text-white (marketing headlines, labels on coloured buttons) → real white */
+.dark .text-white      { color: #ffffff; }
+.dark .text-white\/70  { color: color-mix(in oklab, #ffffff 70%, transparent); }
+.dark .text-white\/30  { color: color-mix(in oklab, #ffffff 30%, transparent); }
+.dark .text-white\/10  { color: color-mix(in oklab, #ffffff 10%, transparent); }
+
+/* light-intent dark: text variants → light on the dark shell */
+.dark .dark\:text-white,
+.dark .dark\:text-gray-50  { color: #f8fafc; }
+.dark .dark\:text-gray-100 { color: #f1f5f9; }
+.dark .dark\:text-gray-200 { color: #e2e8f0; }
+.dark .dark\:text-gray-300 { color: #cbd5e1; }
+
+/* …but on light card/panel surfaces, keep them dark & readable — covering both
+   a light surface as ANCESTOR (descendant combinator) and the light-bg + text
+   classes on the SAME element (compound, e.g. an outline button). */
+.dark :is(.dark\:bg-gray-600, .dark\:bg-gray-700, .dark\:bg-gray-800, .dark\:bg-gray-900) :is(.dark\:text-white, .dark\:text-gray-50, .dark\:text-gray-100, .dark\:text-gray-200),
+.dark :is(.dark\:bg-gray-600, .dark\:bg-gray-700, .dark\:bg-gray-800, .dark\:bg-gray-900):is(.dark\:text-white, .dark\:text-gray-50, .dark\:text-gray-100, .dark\:text-gray-200) { color: #1e293b; }
+.dark :is(.dark\:bg-gray-600, .dark\:bg-gray-700, .dark\:bg-gray-800, .dark\:bg-gray-900) .dark\:text-gray-300,
+.dark :is(.dark\:bg-gray-600, .dark\:bg-gray-700, .dark\:bg-gray-800, .dark\:bg-gray-900).dark\:text-gray-300 { color: #475569; }

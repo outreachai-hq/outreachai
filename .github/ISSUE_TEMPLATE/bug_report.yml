@@ -1,0 +1,36 @@
+name: Bug report
+description: Something isn't working as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for reporting! For security issues, please follow SECURITY.md instead of opening an issue."
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Go to /campaigns\n2. Click ...\n3. See error"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Web app, Browser extension, Self-hosting / Docker, API, Other]
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "Hosted / self-hosted, browser + version, commit SHA"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Please remove any API keys, emails, or other personal data first.

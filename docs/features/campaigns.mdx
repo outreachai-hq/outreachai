@@ -1,0 +1,46 @@
+---
+title: Campaigns
+description: Cold email sequences — how they work
+---
+
+# Campaigns
+
+Campaigns are multi-step cold email sequences that send automatically on a schedule you define.
+
+## How sequences work
+
+A sequence is a series of steps. Each step can be:
+
+- **Email** — sends a personalized email with a configurable subject and body
+- **Wait** — pauses for N days before the next step
+- **LinkedIn action** — visit profile, send connection request, or send a message (requires the browser extension)
+
+Steps execute in order. If a lead replies at any step, the sequence stops automatically for that lead.
+
+## Variable substitution
+
+Use `{{variable}}` syntax in subject lines and email bodies. Available variables:
+
+| Variable | Description |
+|---|---|
+| `{{firstName}}` | Lead's first name |
+| `{{lastName}}` | Lead's last name |
+| `{{company}}` | Lead's company |
+| `{{email}}` | Lead's email address |
+| `{{aiOpener}}` | AI-generated personalized opener (requires enrichment) |
+
+## Creating a campaign
+
+1. Go to **Campaigns** and click **New Campaign**
+2. Name your campaign and click **Create**
+3. Open the **Sequence** tab and add your steps
+4. Open the **Leads** tab and select a lead list
+5. Set your **send window** (hours during which emails are allowed to send)
+6. Click **Launch**
+
+## Campaign statuses
+
+- **Draft** — not yet launched
+- **Active** — sending in progress
+- **Paused** — temporarily halted (resume at any time)
+- **Completed** — all leads have finished the sequence

@@ -1,0 +1,62 @@
+---
+title: Self-Hosting
+description: Deploy OutreachAI on your own infrastructure
+---
+
+# Self-Hosting
+
+## Docker Compose (local or VPS)
+
+The recommended way to self-host is with Docker Compose.
+
+```bash
+git clone https://github.com/outreachai-hq/outreachai
+cd outreachai
+cp .env.docker.example .env
+# Edit .env with your values
+docker compose up -d
+```
+
+The stack includes the Next.js app container and a PostgreSQL container. Migrations run automatically on startup.
+
+## AWS EC2 Deploy
+
+1. Launch an EC2 instance (Ubuntu 22.04, t3.small or larger recommended)
+2. SSH into the instance and install Docker:
+   ```bash
+   sudo apt update && sudo apt install -y docker.io docker-compose-plugin
+   sudo usermod -aG docker ubuntu
+   ```
+3. Clone the repo and configure:
+   ```bash
+   git clone https://github.com/outreachai-hq/outreachai
+   cd outreachai
+   cp .env.docker.example .env
+   nano .env   # fill in NEXTAUTH_SECRET, ENCRYPTION_KEY, NEXTAUTH_URL (your public IP/domain), POSTGRES_PASSWORD
+   ```
+4. Start the app:
+   ```bash
+   docker compose up -d
+   ```
+5. Open port 3000 in your EC2 security group (or use nginx/Caddy as a reverse proxy on port 80/443).
+
+## Railway (one-click)
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template/outreachai)
+
+One-click Railway template — community contribution. Sets up the app and a managed PostgreSQL instance automatically.
+
+## Environment variables
+
+See the full reference at [Environment Variables](/configuration/environment-variables).
+
+## Updating
+
+To pull the latest code and rebuild:
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+Prisma migrations run automatically on container startup.

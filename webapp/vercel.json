@@ -1,0 +1,30 @@
+{
+  "buildCommand": "npm run build:prod",
+  "regions": ["bom1"],
+  "crons": [
+    {
+      "path": "/api/cron/linkedin-publish",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/run-sequence-steps",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/send-scheduled-drafts",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/check-deliverability-alerts",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/check-workflow-triggers",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/process-ses-events",
+      "schedule": "0 7 * * *"
+    }
+  ]
+}

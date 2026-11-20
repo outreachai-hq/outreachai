@@ -1,0 +1,33 @@
+{
+  "name": "OutreachAI",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/favicon.ico",
+  "colors": {
+    "primary": "#6366f1",
+    "light": "#818cf8",
+    "dark": "#4f46e5"
+  },
+  "topbarLinks": [
+    { "name": "GitHub", "url": "https://github.com/outreachai-hq/outreachai" }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": ["introduction", "quickstart", "self-hosting"]
+    },
+    {
+      "group": "Features",
+      "pages": ["features/campaigns", "features/marketing-mailer", "features/warmup", "features/enrichment", "features/ab-testing", "features/teams"]
+    },
+    {
+      "group": "Configuration",
+      "pages": ["configuration/environment-variables", "configuration/email-providers", "configuration/ai-keys"]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/outreachai-hq/outreachai"
+  }
+}

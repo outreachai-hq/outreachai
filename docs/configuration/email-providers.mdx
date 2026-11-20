@@ -1,0 +1,56 @@
+---
+title: Email Providers
+description: Connect Gmail, GoDaddy, Amazon SES, or any SMTP as a sending account
+---
+
+# Email Providers
+
+OutreachAI sends email through your own SMTP account — you bring your own sending credentials. This keeps costs down and gives you full control over deliverability.
+
+## Adding an email account
+
+Go to **Settings** and scroll to **Email Accounts**. Click **Add email account** and fill in the SMTP details.
+
+## Gmail (Google Workspace)
+
+Use an app password (required if 2FA is enabled on the Google account):
+
+| Field | Value |
+|---|---|
+| SMTP host | `smtp.gmail.com` |
+| SMTP port | `587` |
+| SMTP user | your Gmail address |
+| SMTP pass | [App password](https://support.google.com/accounts/answer/185833) |
+
+Enable **Less secure app access** or use an App Password — App Password is recommended.
+
+## GoDaddy / Office 365
+
+| Field | Value |
+|---|---|
+| SMTP host | `smtpout.secureserver.net` |
+| SMTP port | `587` |
+| SMTP user | your GoDaddy email |
+| SMTP pass | your GoDaddy email password |
+
+## Amazon SES
+
+1. Verify your sending domain in the SES console
+2. Create SMTP credentials (IAM user with `AmazonSesSendingAccess` policy)
+
+| Field | Value |
+|---|---|
+| SMTP host | `email-smtp.<region>.amazonaws.com` |
+| SMTP port | `587` |
+| SMTP user | SES SMTP access key |
+| SMTP pass | SES SMTP secret key |
+
+## Custom SMTP
+
+Any SMTP server works. Enter the host, port, username, and password provided by your email host.
+
+Common ports:
+
+- `587` — STARTTLS (recommended)
+- `465` — SSL/TLS
+- `25` — unencrypted (not recommended)

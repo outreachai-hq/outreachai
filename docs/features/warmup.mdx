@@ -1,0 +1,43 @@
+---
+title: Email Warmup
+description: Protect deliverability by gradually ramping send volume
+---
+
+# Email Warmup
+
+Email warmup gradually increases your sending volume over time so inbox providers trust your domain before you start cold outreach at scale.
+
+## Why warmup matters
+
+New sending domains and email accounts have no reputation. Sending 200 emails on day one triggers spam filters. Warmup establishes a positive sending history by exchanging real emails with other warmup participants.
+
+## How the ramp schedule works
+
+OutreachAI uses a progressive ramp:
+
+| Day range | Emails per day |
+|---|---|
+| Days 1–7 | 3 |
+| Days 8–14 | 8 |
+| Days 15+ | 15 |
+
+Warmup emails are real messages exchanged between enrolled accounts. Replies are sent automatically to simulate genuine engagement, which improves inbox placement.
+
+## Enrolling an account
+
+1. Go to **Warmup** in the sidebar
+2. Click **Add account** and select an email account you've already connected in Settings
+3. Warmup starts automatically. The daily scheduler runs in the background and sends warmup emails within your configured send window.
+
+## Monitoring
+
+The Warmup dashboard shows:
+
+- Total sent and received warmup emails
+- Replies sent (engagement metric)
+- Current day of the warmup ramp
+- Last run time
+
+## Pausing and resuming
+
+You can pause warmup at any time from the dashboard. Your warmup progress is preserved — resume when ready.

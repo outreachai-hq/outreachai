@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  width: 1400px; height: 560px; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #0a1628 0%, #0a66c2 45%, #7c3aed 100%);
+  display: flex; align-items: center;
+  position: relative;
+}
+
+/* Background decorations */
+.bg-circle1 { position: absolute; width: 500px; height: 500px; border-radius: 50%; background: rgba(255,255,255,0.04); top: -180px; right: 200px; }
+.bg-circle2 { position: absolute; width: 300px; height: 300px; border-radius: 50%; background: rgba(124,58,237,0.2); bottom: -100px; right: 80px; }
+.bg-circle3 { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: rgba(10,102,194,0.3); top: -60px; left: 320px; }
+.bg-grid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 40px 40px; }
+
+/* Left section */
+.left { position: relative; z-index: 2; padding: 0 70px; flex-shrink: 0; width: 520px; }
+.logo-row { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+.logo { width: 72px; height: 72px; background: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 40px rgba(0,0,0,0.3); flex-shrink: 0; }
+.logo-in { color: #0a66c2; font-weight: 900; font-size: 38px; font-family: Georgia, serif; line-height: 1; }
+.brand-text .name { color: white; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
+.brand-text .domain { color: rgba(255,255,255,0.55); font-size: 13px; font-weight: 500; margin-top: 2px; }
+
+.headline { color: white; font-size: 40px; font-weight: 900; line-height: 1.15; letter-spacing: -1px; margin-bottom: 16px; }
+.headline span { color: #93c5fd; }
+.subline { color: rgba(255,255,255,0.7); font-size: 16px; line-height: 1.6; margin-bottom: 32px; max-width: 380px; }
+
+.cta { display: inline-flex; align-items: center; gap: 10px; background: white; color: #0a66c2; font-size: 15px; font-weight: 800; padding: 14px 28px; border-radius: 50px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+
+/* Divider */
+.vert-divider { width: 1px; height: 400px; background: rgba(255,255,255,0.12); flex-shrink: 0; position: relative; z-index: 2; }
+
+/* Right section */
+.right { position: relative; z-index: 2; flex: 1; padding: 0 60px; display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+
+.right-title { color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+
+/* Feature cards */
+.feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.feat-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 16px 18px; backdrop-filter: blur(10px); }
+.feat-icon { font-size: 24px; margin-bottom: 8px; }
+.feat-title { color: white; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.feat-desc { color: rgba(255,255,255,0.6); font-size: 12px; line-height: 1.5; }
+
+/* Stats row */
+.stats-row { display: flex; gap: 0; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; overflow: hidden; }
+.stat { flex: 1; padding: 14px 20px; text-align: center; border-right: 1px solid rgba(255,255,255,0.1); }
+.stat:last-child { border-right: none; }
+.stat-val { color: white; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
+.stat-label { color: rgba(255,255,255,0.55); font-size: 11px; margin-top: 2px; }
+</style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-circle1"></div>
+  <div class="bg-circle2"></div>
+  <div class="bg-circle3"></div>
+
+  <!-- Left -->
+  <div class="left">
+    <div class="logo-row">
+      <div class="logo"><div class="logo-in">in</div></div>
+      <div class="brand-text">
+        <div class="name">OutReachAI</div>
+        <div class="domain">outreachai.in</div>
+      </div>
+    </div>
+    <div class="headline">LinkedIn outreach<br>on <span>auto-pilot</span></div>
+    <div class="subline">AI-personalized messages, one-click send, and full dashboard tracking — right inside LinkedIn.</div>
+    <div class="cta">
+      <span>in</span>
+      Install Free Extension
+    </div>
+  </div>
+
+  <div class="vert-divider"></div>
+
+  <!-- Right -->
+  <div class="right">
+    <div class="right-title">Everything you need to close more deals</div>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon">✨</div>
+        <div class="feat-title">AI Personalization</div>
+        <div class="feat-desc">Generates unique openers from each prospect's profile using Claude or GPT-4</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">One-Click Send</div>
+        <div class="feat-desc">Fills LinkedIn message box instantly — no copy-paste, no manual work</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">Dashboard Sync</div>
+        <div class="feat-desc">Every contact auto-syncs to outreachai.in for tracking and follow-ups</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔁</div>
+        <div class="feat-title">Reply Detection</div>
+        <div class="feat-desc">Automatically marks prospects as replied and triggers follow-up sequences</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val">10x</div><div class="stat-label">Reply rate</div></div>
+      <div class="stat"><div class="stat-val">30s</div><div class="stat-label">Per message</div></div>
+      <div class="stat"><div class="stat-val">100%</div><div class="stat-label">Auto-synced</div></div>
+      <div class="stat"><div class="stat-val">Free</div><div class="stat-label">To install</div></div>
+    </div>
+  </div>
+</body>
+</html>

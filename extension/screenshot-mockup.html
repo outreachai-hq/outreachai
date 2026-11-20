@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+body { width: 1280px; height: 800px; overflow: hidden; background: #f3f2ef; }
+
+/* LinkedIn-like nav */
+.li-nav { background: white; border-bottom: 1px solid #e0e0e0; padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.li-nav-left { display: flex; align-items: center; gap: 8px; }
+.li-logo { width: 34px; height: 34px; background: #0a66c2; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 18px; font-family: Georgia, serif; }
+.li-search { background: #eef3f8; border: none; border-radius: 4px; padding: 8px 12px; width: 280px; font-size: 14px; color: #333; }
+.li-nav-right { display: flex; align-items: center; gap: 20px; font-size: 11px; color: #666; }
+.li-nav-item { text-align: center; cursor: pointer; }
+.li-nav-item svg { display: block; margin: 0 auto 2px; }
+
+/* Main layout */
+.main { display: flex; gap: 16px; padding: 20px 24px; max-width: 1200px; margin: 0 auto; }
+
+/* Profile card */
+.profile-card { background: white; border-radius: 8px; border: 1px solid #e0e0e0; overflow: hidden; flex: 1; }
+.profile-banner { height: 120px; background: linear-gradient(135deg, #0a66c2 0%, #0284c7 50%, #7c3aed 100%); }
+.profile-body { padding: 0 20px 20px; position: relative; }
+.profile-avatar { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #ef4444); border: 4px solid white; position: absolute; top: -44px; left: 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: 700; }
+.profile-connect-btn { position: absolute; top: 16px; right: 20px; background: #0a66c2; color: white; border: none; border-radius: 20px; padding: 8px 20px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.profile-info { padding-top: 52px; }
+.profile-name { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+.profile-title { font-size: 14px; color: #555; margin-top: 4px; }
+.profile-location { font-size: 13px; color: #0a66c2; margin-top: 6px; }
+.profile-connections { font-size: 12px; color: #0a66c2; margin-top: 4px; }
+.profile-section { margin-top: 16px; border-top: 1px solid #e0e0e0; padding-top: 14px; }
+.profile-section h3 { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 10px; }
+.exp-item { display: flex; gap: 12px; margin-bottom: 12px; }
+.exp-logo { width: 44px; height: 44px; background: #f3f2ef; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.exp-detail .title { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+.exp-detail .company { font-size: 13px; color: #555; }
+.exp-detail .date { font-size: 12px; color: #777; }
+
+/* Right sidebar */
+.right-sidebar { width: 300px; flex-shrink: 0; }
+
+/* Extension popup */
+.ext-popup { background: white; border-radius: 10px; border: 1px solid #d0d5dd; box-shadow: 0 8px 32px rgba(0,0,0,0.18); padding: 14px; width: 300px; }
+.ext-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.ext-logo { width: 24px; height: 24px; background: #0a66c2; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 13px; font-family: Georgia, serif; }
+.ext-title { font-size: 15px; font-weight: 700; color: #0a66c2; }
+
+.dash-section { background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+.dash-section h3 { font-size: 13px; font-weight: 700; color: #0a66c2; margin-bottom: 8px; }
+.connected-row { display: flex; align-items: center; justify-content: space-between; }
+.user-email { font-size: 12px; font-weight: 600; color: #1a1a1a; }
+.plan-badge { background: #0a66c2; color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
+.sync-status { font-size: 11px; color: #16a34a; margin-top: 6px; }
+
+.ai-section { background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+.ai-section h3 { font-size: 13px; font-weight: 700; color: #7c3aed; margin-bottom: 8px; }
+.ai-opener-box { background: white; border: 1px solid #e9d5ff; border-radius: 6px; padding: 8px; font-size: 11px; color: #444; line-height: 1.5; margin-bottom: 8px; }
+.ai-opener-label { font-size: 10px; color: #7c3aed; font-weight: 600; margin-bottom: 4px; }
+.btn-row { display: flex; gap: 6px; }
+.btn { padding: 7px 10px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; flex: 1; text-align: center; }
+.btn-purple { background: #7c3aed; color: white; }
+.btn-green { background: #16a34a; color: white; }
+
+.ext-tip { background: #f9fafb; border-radius: 6px; padding: 8px 10px; font-size: 11px; color: #555; line-height: 1.5; }
+.ext-tip strong { color: #0a66c2; }
+
+/* Extension icon in toolbar */
+.ext-toolbar-icon { position: fixed; top: 10px; right: 80px; width: 28px; height: 28px; background: #0a66c2; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 14px; font-family: Georgia, serif; border: 2px solid #0855a5; box-shadow: 0 2px 8px rgba(10,102,194,0.4); }
+</style>
+</head>
+<body>
+
+<!-- LinkedIn Nav -->
+<div class="li-nav">
+  <div class="li-nav-left">
+    <div class="li-logo">in</div>
+    <input class="li-search" placeholder="🔍  Search" value="Rahul Sharma">
+  </div>
+  <div class="li-nav-right">
+    <div class="li-nav-item">🏠<br>Home</div>
+    <div class="li-nav-item">👥<br>My Network</div>
+    <div class="li-nav-item">💼<br>Jobs</div>
+    <div class="li-nav-item">💬<br>Messaging</div>
+    <div class="li-nav-item">🔔<br>Notifications</div>
+    <div class="li-nav-item" style="color:#0a66c2;font-weight:700">Me ▾</div>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="main">
+  <!-- Profile -->
+  <div style="flex:1">
+    <div class="profile-card">
+      <div class="profile-banner"></div>
+      <div class="profile-body">
+        <div class="profile-avatar">RS</div>
+        <button class="profile-connect-btn">✉ Message</button>
+        <div class="profile-info">
+          <div class="profile-name">Rahul Sharma</div>
+          <div class="profile-title">VP of Engineering at TechCorp India · Building distributed systems</div>
+          <div class="profile-location">📍 Bangalore, Karnataka, India</div>
+          <div class="profile-connections">🔗 487 connections</div>
+        </div>
+        <div class="profile-section">
+          <h3>Experience</h3>
+          <div class="exp-item">
+            <div class="exp-logo">🏢</div>
+            <div class="exp-detail">
+              <div class="title">VP of Engineering</div>
+              <div class="company">TechCorp India</div>
+              <div class="date">Jan 2022 – Present · 2 yrs 6 mos</div>
+            </div>
+          </div>
+          <div class="exp-item">
+            <div class="exp-logo">💡</div>
+            <div class="exp-detail">
+              <div class="title">Senior Software Engineer</div>
+              <div class="company">Flipkart</div>
+              <div class="date">Mar 2018 – Dec 2021 · 3 yrs 9 mos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Extension Popup -->
+  <div class="right-sidebar">
+    <div class="ext-popup">
+      <div class="ext-header">
+        <div class="ext-logo">in</div>
+        <div class="ext-title">💼 Outreach Assistant</div>
+      </div>
+
+      <!-- Connected state -->
+      <div class="dash-section">
+        <h3>🔗 Dashboard Sync</h3>
+        <div class="connected-row">
+          <div>
+            <div class="user-email">girish@outreachai.in</div>
+            <span class="plan-badge">Pro</span>
+          </div>
+          <button style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer">Disconnect</button>
+        </div>
+        <div class="sync-status">✅ Contacts sync to your dashboard</div>
+      </div>
+
+      <!-- AI section -->
+      <div class="ai-section">
+        <h3>✨ AI Personalization</h3>
+        <div class="ai-opener-label">Generated opener for Rahul:</div>
+        <div class="ai-opener-box">
+          "Hi Rahul — your work scaling Flipkart's distributed systems caught my eye. We're helping engineering leaders like you automate outreach. Would love to connect!"
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-purple">✨ Fill Message Box</button>
+          <button class="btn btn-green">✅ Log as Sent</button>
+        </div>
+      </div>
+
+      <div class="ext-tip">
+        <strong>Quick start:</strong><br>
+        1. Open any LinkedIn profile<br>
+        2. Click <em>✨ Fill Message Box</em><br>
+        3. Send &amp; <em>Log as Sent</em> to sync
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toolbar extension icon indicator -->
+<div class="ext-toolbar-icon">in</div>
+
+</body>
+</html>

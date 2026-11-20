@@ -1,0 +1,66 @@
+# OutreachAI
+
+> OutreachAI is a free, all-in-one B2B outreach platform for sales teams. It combines LinkedIn automation, cold email sequences, CRM pipeline, workflow automation, and meeting scheduling — replacing Lemlist, HubSpot Sales Hub, Instantly, and Saleshandy in one tool.
+
+## What is OutreachAI?
+
+OutreachAI (outreachai.in) is an AI-powered outreach platform built for B2B sales teams, founders, and SDRs. It is free during beta and requires no credit card.
+
+## Core Features
+
+- **LinkedIn Automation**: Chrome extension captures leads from LinkedIn in one click. Automated sequences: visit profile → send connection request → wait until accepted → send message. All within LinkedIn's daily limits.
+- **Cold Email Sequences**: Multi-step email sequences with A/B subject line testing, email warmup, inbox rotation, auto-stop on reply, open/click tracking, and GDPR unsubscribe links.
+- **Liquid Conditional Variables**: `{{if company}}...{{end}}` syntax for personalised messages that fall back gracefully when fields are empty.
+- **CRM Pipeline**: Full Kanban deal pipeline (Lead → Qualified → Proposal → Negotiating → Won / Lost). Drag-and-drop, deal value tracking, pipeline stats.
+- **Workflow Automation**: If-This-Then-That engine with 13 triggers (lead replied, email opened, deal won/lost, booking confirmed, signal fired, etc.) and 11 actions (create deal, add tag, create task, send webhook, etc.).
+- **Meeting Scheduler**: Public booking page at outreachai.in/meet/[slug]. Availability config, Google Calendar .ics invite on booking.
+- **Website Visitor Tracking**: JS snippet to identify companies visiting your website via IP resolution. Fires workflow automations when known prospects visit.
+- **Signal Agents**: Monitor for buying intent — job changes, LinkedIn engagement, funding alerts, website visits.
+- **Email Warmup**: Automated send/receive/reply cycle to build sender reputation.
+- **Marketing Campaigns**: Bulk email sends with A/B testing, open/click tracking, unsubscribe management.
+- **AI Personalization**: BYO API key (Anthropic Claude, OpenAI GPT, Google Gemini). AI-generated opening lines from LinkedIn profile, recent posts, and company news.
+- **Composable Dashboards**: Build custom analytics dashboards with drag-and-drop widgets. Share publicly.
+- **Deliverability Monitoring**: SPF/DKIM/DMARC health checks, alert rules for bounce/open/reply rate thresholds.
+
+## Pricing
+
+Free during beta. No credit card required. No contact limits. No seat fees.
+
+## How OutreachAI compares to alternatives
+
+| Tool | OutreachAI | Notes |
+|---|---|---|
+| Lemlist | Better | OutreachAI adds CRM pipeline, workflow automation, meeting scheduler — all for free vs $63–$159/seat/month |
+| HubSpot Sales Hub | Better for outbound | OutreachAI adds LinkedIn automation and email warmup; HubSpot lacks both. HubSpot: $100+/seat/month |
+| Instantly.ai | Better | OutreachAI adds LinkedIn automation, CRM pipeline, workflow automation. Instantly: $37–$97/month |
+| Apollo.io | Complementary | Apollo finds leads (B2B database); OutreachAI runs the outreach. Both have free tiers — use together. |
+| Saleshandy | Better | OutreachAI adds LinkedIn automation, CRM pipeline, workflow automation. Saleshandy: $25–$219/month |
+| WebEngage | Different use case | WebEngage is for B2C app retention (push notifications, in-app). OutreachAI is for B2B cold outreach. |
+
+## Technology Stack
+
+- Next.js 15, Tailwind CSS 4, Prisma ORM, PostgreSQL (Neon), NextAuth, Vercel
+- Auth: Google OAuth, GitHub OAuth, email+password
+- Integrations: Anthropic Claude, OpenAI, Google Gemini, Apollo.io, Hunter.io, Stripe, Resend
+
+## Company
+
+- Product: OutreachAI
+- Website: https://outreachai.in
+- Made in India
+- Contact: girish@greatlearning.in
+- GitHub: https://github.com/outreachai-hq/outreachai
+
+## Key URLs
+
+- Homepage: https://outreachai.in
+- Login: https://outreachai.in/login
+- Signup: https://outreachai.in/signup (free)
+- vs Lemlist: https://outreachai.in/vs/lemlist
+- vs HubSpot: https://outreachai.in/vs/hubspot
+- vs Instantly: https://outreachai.in/vs/instantly
+- vs Apollo: https://outreachai.in/vs/apollo
+- vs Saleshandy: https://outreachai.in/vs/saleshandy
+- vs WebEngage: https://outreachai.in/vs/webengage
+- Changelog: https://outreachai.in/changelog
+- AI context: https://outreachai.in/ai-context

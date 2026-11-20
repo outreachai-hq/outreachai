@@ -1,0 +1,43 @@
+# ── Node / Next.js ───────────────────────────────────────────────────────────
+node_modules/
+webapp/.next/
+webapp/out/
+webapp/build/
+webapp/coverage/
+webapp/playwright-report/
+webapp/test-results/
+
+# ── Environment variables ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+!webapp/.env.example
+!.env.docker.example
+
+# ── MCP config / data (contains DB credentials and session state) ────────────
+.mcp.json
+.playwright-mcp/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.pem
+*.tsbuildinfo
+
+# ── Preview / dev files (not part of extension) ───────────────────────────────
+login.html
+preview.html
+
+# ── TypeScript ────────────────────────────────────────────────────────────────
+next-env.d.ts
+.vercel
+
+# ── Local / personal ──────────────────────────────────────────────────────────
+.claude/settings.local.json
+*.zip
+!webapp/public/*.zip

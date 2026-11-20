@@ -1,0 +1,64 @@
+---
+title: Quickstart
+description: Get OutreachAI running in under 5 minutes
+---
+
+# Quickstart
+
+Get OutreachAI running locally with Docker Compose in under 5 minutes.
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed
+- Git
+
+## Steps
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/outreachai-hq/outreachai
+cd outreachai
+```
+
+### 2. Configure environment variables
+
+```bash
+cp .env.docker.example .env
+```
+
+Open `.env` and fill in the required values:
+
+- `NEXTAUTH_SECRET` — generate with `openssl rand -hex 32`
+- `ENCRYPTION_KEY` — generate with `openssl rand -hex 32`
+- `NEXTAUTH_URL` — set to `http://localhost:3000` for local development
+- `POSTGRES_PASSWORD` — any password for the bundled PostgreSQL container
+
+### 3. Start the app
+
+```bash
+docker compose up -d
+```
+
+This starts the Next.js app and a PostgreSQL database. Prisma migrations run automatically on startup.
+
+### 4. Open the app and sign up
+
+Navigate to [http://localhost:3000](http://localhost:3000) and create your account.
+
+### 5. Follow the in-app onboarding checklist
+
+After signing up, the dashboard shows a 5-step onboarding checklist:
+
+1. Connect your email account
+2. Import your first leads
+3. Create a campaign sequence
+4. Send your first email
+5. Set up email warmup
+
+Complete each step and you'll be ready to launch your first campaign.
+
+## Next steps
+
+- [Self-hosting guide](/self-hosting) — deploy to a VPS or cloud provider
+- [Configuration reference](/configuration/environment-variables) — all available env vars

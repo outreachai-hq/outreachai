@@ -1,0 +1,1 @@
+ALTER TABLE "Template" ADD COLUMN IF NOT EXISTS "subject" TEXT;

@@ -1,0 +1,275 @@
+ID,Module,Feature,Test Case,Steps,Expected Result,Actual Result,Pass / Fail,Priority,Notes
+,,,,,,,,,,
+AUTH-01,Authentication,Sign up,"New user creates an account","1. Go to /signup
+2. Enter name, email, password (8+ chars)
+3. Click Create account","Redirects to /onboarding with checklist visible","",,"P0",
+AUTH-02,Authentication,Sign in,"Existing user logs in with email + password","1. Go to /login
+2. Enter valid email + password
+3. Click Sign in","Redirects to /dashboard","",,"P0",
+AUTH-03,Authentication,Sign in — wrong password,"Login with incorrect password","1. Go to /login
+2. Enter valid email + wrong password
+3. Click Sign in","Error message shown. Does not redirect.","",,"P0",
+AUTH-04,Authentication,Password reset,"User resets forgotten password","1. Go to /login → Forgot password
+2. Enter email, submit
+3. Check email for reset link
+4. Click link, set new password","New password works on next login","",,"P1",
+AUTH-05,Authentication,Demo credentials,"Demo workspace login works","1. Go to /login
+2. Use akhilesh@demo.com / password123","Logs in, shows populated demo data","",,"P0","Must work for prospects & demos"
+,,,,,,,,,,
+DASH-01,Dashboard,KPI cards,"Stats cards load with real data","1. Log in
+2. Go to /dashboard","6 KPI cards visible: Total Leads, Active Campaigns, Contacts, Replies, Reply Rate, Hot Leads","",,"P0",
+DASH-02,Dashboard,Sparklines,"7-day sparklines appear on Emails Sent and Replies cards","1. Log in (account with some email activity)
+2. Go to /dashboard
+3. Look at Emails Sent and Replies cards","Small SVG line chart visible below the number","",,"P1",
+DASH-03,Dashboard,Quick-actions,"Quick-action buttons navigate correctly","1. Go to /dashboard
+2. Click New campaign → verify goes to campaigns
+3. Click Import leads → verify goes to leads
+4. Click Open inbox → verify goes to inbox","Each button navigates to the correct page","",,"P1",
+DASH-04,Dashboard,Onboarding checklist,"New user sees onboarding steps","1. Sign up fresh account
+2. Go to /dashboard","Onboarding checklist visible with unchecked steps","",,"P1",
+,,,,,,,,,,
+CAMP-01,Campaigns,Create campaign,"Create a new campaign","1. Go to /campaigns
+2. Click New campaign
+3. Name it, pick a sequence and lead list
+4. Click Create / Save","Campaign appears in list with Draft status","",,"P0",
+CAMP-02,Campaigns,Launch campaign,"Launch a draft campaign","1. Open a draft campaign
+2. Go to Launch tab
+3. Click Launch","Campaign status changes to Active. CampaignLead rows created.","",,"P0",
+CAMP-03,Campaigns,Pause campaign,"Pause an active campaign","1. Open an active campaign
+2. Click Pause","Status changes to Paused. Badge updates immediately.","",,"P0",
+CAMP-04,Campaigns,Per-step stats,"Step cards show sent/at-step/passed counts","1. Open an active campaign with leads
+2. Go to Sequence tab
+3. Look below each step card","Mini stat bar shows ✉ N sent / ● N here / ✓ N passed","",,"P1","New feature"
+CAMP-05,Campaigns,Leads tab,"Campaign leads list shows statuses","1. Open a campaign → Leads tab","Table shows leads with status badges (Pending, In progress, Replied, etc.)","",,"P0",
+CAMP-06,Campaigns,Auto-stop on reply,"Lead that replied is not sent more steps","1. Launch campaign
+2. Simulate a reply (message in Conversation with direction=in)
+3. Trigger cron or wait for next run","CampaignLead status changes to Replied. No further steps sent.","",,"P0","Critical correctness check"
+CAMP-07,Campaigns,Status filters,"Filter campaigns by status","1. Go to /campaigns
+2. Click Active tab → only active campaigns show
+3. Click Draft tab → only drafts show","Filter works correctly, counts update","",,"P1",
+,,,,,,,,,,
+SEQ-01,Sequences,Create sequence,"Create a new sequence","1. Go to /sequences
+2. Click New sequence
+3. Add a name, click Create","Sequence appears in list","",,"P0",
+SEQ-02,Sequences,Add LinkedIn step,"Add a Visit Profile step","1. Open sequence
+2. Click + Add step (or + between steps)
+3. Pick Visit Profile
+4. Save","Step card appears with 👁 icon and LinkedIn badge","",,"P0",
+SEQ-03,Sequences,Add email step,"Add an Email step with subject and body","1. Open sequence
+2. Add a step → choose Email
+3. Fill subject: 'Quick question {{firstName}}'
+4. Fill body with personalization vars
+5. Save","Email step saved. Subject preview shows in step card.","",,"P0",
+SEQ-04,Sequences,A/B variant toggle,"Enable A/B test on email step","1. Open sequence
+2. Click email step to open editor
+3. Toggle the A/B switch
+4. Fill variant A subject/body
+5. Click [B] tab, fill variant B subject/body
+6. Save","A/B badge visible on step. Both variants saved.","",,"P1","New feature"
+SEQ-05,Sequences,Condition step,"Add a condition branch","1. Open sequence
+2. Add step → Condition
+3. Set: if replied in 7 days
+4. Connect true/false branches
+5. Save","Condition step shown with branch labels","",,"P1",
+SEQ-06,Sequences,Wait step,"Add a wait step","1. Open sequence
+2. Add Wait step
+3. Set 3 days
+4. Save","Timing header shows 'Wait for 3 days'","",,"P0",
+SEQ-07,Sequences,Drag to reorder,"Drag steps to change order","1. Open sequence with 3+ steps
+2. Drag the ⠿ handle of step 3 above step 1","Steps reorder correctly","",,"P2","Drag handle is visible on hover"
+,,,,,,,,,,
+LEADS-01,Leads,Import CSV,"Import leads from CSV file","1. Go to /leads
+2. Open a lead list → Import CSV
+3. Upload a CSV with firstName,email,company columns
+4. Confirm import","Leads appear in the list with correct fields","",,"P0",
+LEADS-02,Leads,Manual add lead,"Add a single lead manually","1. Open a lead list
+2. Click Add lead → Manual
+3. Fill firstName, email
+4. Save","Lead appears in list","",,"P0",
+LEADS-03,Leads,Enrich lead,"Enrich a lead via Apollo","1. Open a lead with a LinkedIn URL
+2. Click Enrich / Find phone
+3. Wait for result","Phone, headline, or company info populated (if Apollo key set)","",,"P1","Requires Apollo API key in Settings"
+LEADS-04,Leads,Lead activity timeline,"View a lead's activity history","1. Click on a lead → Lead detail
+2. Go to Activity tab","Timeline shows email.sent, email.opened, etc. events in order","",,"P1",
+LEADS-05,Leads,Custom field display,"Custom fields show on lead detail","1. Go to Settings → Custom Fields → create a text field for Lead
+2. Open a lead
+3. Look for the custom field panel","Custom field is visible and editable","",,"P1",
+LEADS-06,Leads,AI opener generation,"Generate AI opener for a lead","1. Open a lead with company/headline data
+2. Click Generate AI opener","aiOpener field fills with personalized text","",,"P1","Requires AI key in Settings"
+,,,,,,,,,,
+INBOX-01,Inbox,View conversations,"Inbox loads conversations","1. Go to /inbox","Conversation list visible on left. Clicking one opens the thread on right.","",,"P0",
+INBOX-02,Inbox,Channel filter,"Filter by LinkedIn or Email","1. Go to /inbox
+2. Click LinkedIn tab → only LI threads show
+3. Click Email tab → only email threads show","Filter works, channel badges match","",,"P0",
+INBOX-03,Inbox,Reply to conversation,"Send a reply in inbox","1. Select a conversation
+2. Type reply in the text box
+3. Click Send","Message appears in thread. lastSenderIsMe = true.","",,"P0",
+INBOX-04,Inbox,AI reply suggestion,"Get AI-suggested reply","1. Select a conversation with an inbound message
+2. Click ✨ AI Suggest","Text box fills with a relevant AI-drafted reply","",,"P1","Requires AI key"
+INBOX-05,Inbox,Apply label,"Label a conversation as Interested","1. Select a conversation
+2. Click the Interested chip","Chip highlights. Label persists on reload.","",,"P0",
+INBOX-06,Inbox,Mark conversation done,"Dismiss a conversation to Done","1. Select a conversation
+2. Click the ✓ Done button in the header","Conversation disappears from Open list. Appears in Done tab.","",,"P1","New feature"
+INBOX-07,Inbox,Done/Open tabs,"Switch between Open and Done conversations","1. Go to /inbox
+2. Click Done tab","Shows only done conversations. Clicking Open returns to normal view.","",,"P1","New feature"
+INBOX-08,Inbox,Bulk select and mark read,"Select multiple conversations and mark all read","1. Hover over first conversation → checkbox appears
+2. Check 2-3 conversations
+3. Click Mark read in bulk bar","All selected conversations marked read. Unread dots disappear.","",,"P1","New feature"
+INBOX-09,Inbox,Bulk mark done,"Bulk archive conversations","1. Select 2+ conversations
+2. Click Mark done in bulk bar","All selected conversations removed from Open list","",,"P1","New feature"
+INBOX-10,Inbox,Select all,"Select all visible conversations","1. Go to /inbox
+2. Click the select-all checkbox at top of list","All conversations in current view are checked","",,"P2","New feature"
+INBOX-11,Inbox,AI auto-classify,"Inbound message gets auto-labelled","1. Receive an inbound reply (or send a test via API)
+2. Wait for classify-reply to fire","Conversation automatically gets interested/not_interested/ooo label","",,"P1","New feature — fires async"
+,,,,,,,,,,
+CONTACTS-01,Contacts,View contacts,"Contacts list loads","1. Go to /contacts","Table shows contacts with name, company, status, date","",,"P0",
+CONTACTS-02,Contacts,Search contacts,"Search by name or company","1. Go to /contacts
+2. Type a name in the search box","List filters in real time","",,"P0",
+CONTACTS-03,Contacts,Contact status,"Status badges are color-coded","1. Go to /contacts","Sent = gray, Followup = yellow, Replied = green badges visible","",,"P1",
+,,,,,,,,,,
+COMP-01,Companies,Companies list,"Companies page loads with real data","1. Go to /companies","Table shows companies with name, domain, industry, contact/lead counts","",,"P0",
+COMP-02,Companies,Company detail,"Company detail page shows related leads","1. Click on a company","Detail page shows firmographic info + Contacts tab + Leads tab + Activities tab","",,"P0",
+,,,,,,,,,,
+TASKS-01,Tasks,View tasks,"Tasks grouped by Today/Upcoming/Completed","1. Go to /tasks","Three tabs visible with correct grouping","",,"P0",
+TASKS-02,Tasks,Create task,"Create a manual task","1. Go to /tasks → New task
+2. Fill title, type (call), due date","Task appears in Upcoming or Today","",,"P0",
+TASKS-03,Tasks,Complete task,"Mark a task as done","1. Go to /tasks
+2. Click the ✓ on a task","Task moves to Completed tab. completedAt timestamp set.","",,"P0",
+,,,,,,,,,,
+SIGNALS-01,Signal Agents,Signals page loads,"Real page with Watchlists tab (not Coming Soon)","1. Go to /signals","Watchlists tab and Signal feed tab visible. No 'Coming Soon' badge.","",,"P0","New feature"
+SIGNALS-02,Signal Agents,Create watchlist,"Create a job change watchlist","1. Click New watchlist
+2. Name: 'Job changers', type: Job change
+3. Click Create","Watchlist card appears. Active toggle is on.","",,"P0","New feature"
+SIGNALS-03,Signal Agents,Pause watchlist,"Pause an active watchlist","1. Click the toggle on a watchlist","Toggle turns off. 'Paused' badge appears on card.","",,"P1","New feature"
+SIGNALS-04,Signal Agents,Delete watchlist,"Delete a watchlist","1. Click 🗑 on a watchlist
+2. Confirm","Watchlist disappears from list","",,"P1","New feature"
+SIGNALS-05,Signal Agents,View recent signals,"Expand watchlist to see signal history","1. Click 'Recent ▾' on a watchlist","Dropdown shows recent signals or 'No signals fired yet'","",,"P1","New feature"
+SIGNALS-06,Signal Agents,Signal feed tab,"All-signals feed across watchlists","1. Click Signal feed tab","Shows combined chronological list of signals from all watchlists","",,"P1","New feature"
+,,,,,,,,,,
+CALLS-01,Calls,Calls page loads,"Real page with call log (not Coming Soon)","1. Go to /calls","Header, stats row, empty state or call log table visible. No 'Coming Soon' badge.","",,"P0","New feature"
+CALLS-02,Calls,Log a call,"Record an outbound call","1. Click Log a call
+2. Enter phone number (+1 555 123 4567)
+3. Select direction: Outbound
+4. Duration: 3:45
+5. Outcome: Interested
+6. Notes: 'Wants a demo next week'
+7. Click Log call","Call row appears in table with green Interested badge and duration 3:45","",,"P0","New feature"
+CALLS-03,Calls,Log inbound call,"Record an inbound call","1. Click Log a call → direction: Inbound
+2. Fill fields, click Log call","Row shows 📲 Inbound badge","",,"P1","New feature"
+CALLS-04,Calls,Edit call notes,"Update notes on a logged call","1. Click ✏️ on a call row
+2. Change notes, click Save","Notes update inline without page reload","",,"P1","New feature"
+CALLS-05,Calls,Set outcome,"Change outcome on existing call","1. Click ✏️ on a call
+2. Change outcome dropdown to Callback
+3. Save","Outcome badge updates to blue Callback","",,"P1","New feature"
+CALLS-06,Calls,Delete call,"Remove a call record","1. Click 🗑 on a call row
+2. Confirm","Row disappears","",,"P1","New feature"
+CALLS-07,Calls,Weekly stats,"Stats cards show this-week summary","1. Log 3+ calls this week
+2. Reload /calls","Stats row shows: correct call count, avg duration, connection rate","",,"P1","New feature"
+,,,,,,,,,,
+DELIV-01,Deliverability,DNS health check,"Domain records checked","1. Go to /deliverability
+2. Have an email account connected with a real domain","SPF/DKIM/DMARC status shown per domain. Score displayed.","",,"P0",
+DELIV-02,Deliverability,Alert rules section,"Alert rules section visible below DNS cards","1. Go to /deliverability
+2. Scroll down","'Alert rules' section visible with 'Add alert rule' button","",,"P0","New feature"
+DELIV-03,Deliverability,Create alert rule,"Add a bounce rate alert","1. Click Add alert rule
+2. Metric: Bounce rate, Condition: Above, Threshold: 5
+3. Click Add","Rule appears in list: 'Bounce rate above 5%' with active toggle","",,"P0","New feature"
+DELIV-04,Deliverability,Toggle alert rule,"Pause an alert rule","1. Click the active toggle on a rule","Toggle turns off. Rule persists but inactive.","",,"P1","New feature"
+DELIV-05,Deliverability,Delete alert rule,"Remove a rule","1. Click 🗑 on a rule
+2. Confirm","Rule disappears from list","",,"P1","New feature"
+DELIV-06,Deliverability,Multiple metrics,"Create alerts for each metric type","1. Create rules for: Bounce rate, Open rate, Reply rate, Domain score","All 4 rules visible with correct metric labels and threshold units","",,"P1","New feature"
+,,,,,,,,,,
+SETTINGS-01,Settings,Email account — add SMTP,"Connect an SMTP email account","1. Go to /settings → Email accounts
+2. Fill SMTP details
+3. Click Add account","Account appears in list with email address","",,"P0",
+SETTINGS-02,Settings,AI keys,"Save an Anthropic API key","1. Go to /settings → AI Providers
+2. Paste an Anthropic key
+3. Click Save","Key saved (shows masked on reload)","",,"P0","Required for AI features"
+SETTINGS-03,Settings,Enrichment keys,"Save Apollo key","1. Go to /settings → Enrichment
+2. Paste Apollo key, Save","Key saved and masked on reload","",,"P1",
+SETTINGS-04,Settings,Snippets,"Create a text snippet","1. Go to /settings → scroll to Snippets
+2. Click Add snippet
+3. Key: thanks, Body: 'Thanks for your time!'
+4. Save","Snippet available in inbox reply box via /thanks","",,"P1",
+SETTINGS-05,Settings,Schedules,"Create a send-window schedule","1. Go to /settings → Schedules
+2. Click New schedule
+3. Name it, set Mon–Fri 9am–6pm
+4. Save","Schedule appears in list and is selectable on campaigns","",,"P1",
+SETTINGS-06,Settings,Conversation labels,"Add a custom label","1. Go to /settings → Conversation Labels
+2. Add label: 'Hot Lead', color green
+3. Save","Label appears in inbox label picker","",,"P1",
+SETTINGS-07,Settings,Billing section,"Billing section shows plan + Manage billing button","1. Go to /settings
+2. Scroll to Billing section","'Current plan' shown with 'Manage billing' button. No 'Coming Soon' text.","",,"P1","New feature"
+SETTINGS-08,Settings,Manage billing redirect,"Manage billing opens Stripe portal","1. Go to /settings → Billing
+2. Click Manage billing","Redirects to Stripe billing portal page (or error if Stripe not configured)","",,"P1","New feature — needs Stripe key"
+SETTINGS-09,Settings,Profile — update name,"Change display name","1. Go to /settings → Profile
+2. Change name, save","Name updates in session and displays correctly in UI","",,"P1",
+SETTINGS-10,Settings,Custom fields — create,"Add a text custom field for leads","1. Go to /settings → Custom Fields
+2. Add field: key=industry, label=Industry, entity=lead, type=text
+3. Save","Field appears in lead detail drawer","",,"P1",
+SETTINGS-11,Settings,Auto-draft toggle,"Enable AI auto-draft for email replies","1. Go to /settings → AI Auto-Draft
+2. Toggle to Email or Both
+3. Save","Setting persists. Inbound emails generate draft replies in Outreach Queue.","",,"P1",
+,,,,,,,,,,
+DASH2-01,Dashboards,Create dashboard,"Create a composable analytics dashboard","1. Go to /dashboards
+2. Click New dashboard
+3. Name it, click Create","Dashboard created with empty canvas","",,"P1",
+DASH2-02,Dashboards,Add widget,"Add a KPI widget","1. Open dashboard
+2. Click Edit → Add widget
+3. Pick Reply Rate Over Time","Widget appears on dashboard with chart","",,"P1",
+DASH2-03,Dashboards,Share dashboard,"Generate a public share link","1. Open a dashboard
+2. Click Share button
+3. Click Create link","Share URL generated. Copy button works.","",,"P1",
+DASH2-04,Dashboards,Public view,"Share link opens read-only view","1. Open the share URL in incognito
+2. Browse the dashboard","Dashboard visible without login. No edit controls. 'Powered by OutreachAI' footer.","",,"P1",
+,,,,,,,,,,
+OUTQ-01,Outreach Queue,View pending drafts,"Outreach Queue shows AI-drafted messages","1. Go to /outreach-queue
+2. (Ensure aiReplyAutoDraft is enabled in settings)","Pending draft messages listed with channel badge and body preview","",,"P0",
+OUTQ-02,Outreach Queue,Approve and send,"Approve a draft to send it","1. Click Approve on a draft message","Draft status changes to Sent. Actual message sent via email/LinkedIn.","",,"P0",
+OUTQ-03,Outreach Queue,Reject draft,"Reject a draft","1. Click Reject on a draft","Draft status changes to Rejected and is removed from queue","",,"P1",
+OUTQ-04,Outreach Queue,Edit before sending,"Edit draft body then approve","1. Click Edit on a draft
+2. Modify the text
+3. Click Approve","Modified version is sent, not original","",,"P1",
+,,,,,,,,,,
+INSIGHTS-01,Insights,Insights page loads,"5 signal cards shown","1. Go to /insights","Up to 5 insight cards visible (Reply rate WoW, hot leads, etc.)","",,"P1",
+INSIGHTS-02,Insights,Severity badges,"Critical insights highlighted","1. Go to /insights
+2. Check if any metric has dropped significantly","Critical severity shows red badge, warning shows yellow","",,"P2",
+,,,,,,,,,,
+WARMUP-01,Warmup,Create warmup account,"Add an email to warmup","1. Go to /warmup
+2. Click Add account
+3. Pick a connected email account","Account appears in warmup list with Day 0 progress","",,"P1",
+WARMUP-02,Warmup,Warmup stats,"Stats update after warmup emails sent","1. Open a warmup account
+2. Check Sent/Received/Replied counts","Numbers reflect actual warmup emails sent","",,"P1",
+,,,,,,,,,,
+MKTG-01,Marketing,Create marketing campaign,"Create a bulk email campaign","1. Go to /marketing → New campaign
+2. Fill name, subject, body, sender, list
+3. Save as draft","Campaign appears in list with Draft status","",,"P1",
+MKTG-02,Marketing,A/B test setup,"Configure A/B subject line test","1. Edit a marketing campaign
+2. Enable A/B toggle
+3. Set Subject B
+4. Set split: 20%","A/B config saved. Stats page shows variant A vs B","",,"P1",
+MKTG-03,Marketing,Send campaign,"Schedule and send campaign","1. Set send time
+2. Click Schedule
+3. Wait for cron","Campaign sends to recipients. Stats update with open/click/unsubscribe counts.","",,"P1",
+,,,,,,,,,,
+EXT-01,Chrome Extension,Extension connects,"Extension links to account","1. Install extension
+2. Click Connect in /settings
+3. Browse LinkedIn","Extension status shows Connected in settings","",,"P0","Requires Chrome + extension installed"
+EXT-02,Chrome Extension,Sync LinkedIn messages,"Extension syncs DMs to Inbox","1. Open LinkedIn Messaging in Chrome
+2. Extension auto-syncs","New conversations appear in /inbox with linkedin channel","",,"P0",
+EXT-03,Chrome Extension,Queue LinkedIn action,"Extension picks up queued action","1. Campaign with LinkedIn step runs
+2. Extension detects pending action
+3. Executes visit/connect/message","LinkedInAction marked done. CampaignLead advances.","",,"P0",
+,,,,,,,,,,
+EDGE-01,Edge Cases,Empty states,"Empty states show helpful messages (not blank screens)","1. Create fresh account with no data
+2. Visit: /campaigns, /leads, /inbox, /signals, /calls, /tasks","Each page shows an empty state with icon + description + CTA button","",,"P1",
+EDGE-02,Edge Cases,Error handling,"API errors show user-friendly messages","1. Disconnect internet
+2. Try to save a sequence step","Error toast or inline error shown. App doesn't crash or show blank screen.","",,"P1",
+EDGE-03,Edge Cases,Mobile responsive,"App usable on mobile screen","1. Resize browser to 375px wide
+2. Navigate to /inbox, /campaigns, /dashboard","Layout adjusts. Inbox shows full-width list. No horizontal overflow.","",,"P2",
+EDGE-04,Edge Cases,Dark mode,"Dark mode renders correctly","1. Enable dark mode in OS or browser
+2. Browse all main pages","No invisible text, no white-on-white, no broken contrast","",,"P1",
+EDGE-05,Edge Cases,Long content,"Long names/subjects don't break layout","1. Create a campaign with a 100-character name
+2. Create a lead with a very long company name","Text truncates with ellipsis. No layout overflow.","",,"P2",
+EDGE-06,Edge Cases,Concurrent actions,"Multiple tabs don't corrupt state","1. Open /inbox in two tabs
+2. Mark a conversation done in tab 1
+3. Refresh tab 2","Tab 2 reflects the change after refresh","",,"P2",

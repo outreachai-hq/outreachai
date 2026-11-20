@@ -1,0 +1,35 @@
+---
+title: Contact Enrichment
+description: Find and verify emails using Apollo or Hunter
+---
+
+# Contact Enrichment
+
+OutreachAI's enrichment feature finds email addresses for leads and verifies them before you send — all using your own API keys (BYOK — bring your own key).
+
+## Supported providers
+
+| Provider | What it does | Get a key |
+|---|---|---|
+| Apollo.io | Email lookup by name + company | [apollo.io](https://app.apollo.io/#/settings/integrations/api) |
+| Hunter.io | Email lookup and domain search | [hunter.io](https://hunter.io/api-keys) |
+
+## Adding your API keys
+
+1. Go to **Settings** and open the **AI & Integrations** section
+2. Paste your Apollo and/or Hunter API keys
+3. Keys are stored encrypted in the database
+
+## Finding emails
+
+1. Open a lead list in **Leads**
+2. Select leads without an email address
+3. Click **Enrich** — OutreachAI queries your configured provider and fills in the email field
+
+## Email verification
+
+After enrichment, OutreachAI performs a basic SMTP verification check to reduce bounce rates. Leads with unverifiable emails are flagged so you can review them before sending.
+
+## AI-generated openers
+
+If you have an Anthropic, OpenAI, or Gemini API key configured, OutreachAI can generate a personalized opening line for each lead based on their company, headline, and LinkedIn activity. Use `{{aiOpener}}` in your email templates to include it.
